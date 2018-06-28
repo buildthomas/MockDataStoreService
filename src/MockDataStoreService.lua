@@ -1,12 +1,13 @@
 --[[	MockDataStoreService.lua
-	This module emulates datastores and provides exporting/importing capabilities
-	for seamless offline/local testing and development.
+		This module emulates datastores and provides exporting/importing capabilities
+		for seamless offline/local testing and development.
 
-	This module is licensed under APLv2, refer to the LICENSE file or:
-	https://www.apache.org/licenses/LICENSE-2.0
+		This module is licensed under APLv2, refer to the LICENSE file or:
+		https://www.apache.org/licenses/LICENSE-2.0
 
-	To use this code, you must keep this notice in all copies of (significant pieces of) this code.
-	Copyright 2018 buildthomas
+		To use this code, you must keep this notice in all copies of (significant pieces of) this code.
+		Copyright 2018 buildthomas
+
 
 	Documentation:
 	--------------
@@ -105,7 +106,7 @@ local YIELD_TIME_MAX = 1.0
 local YIELD_TIME_UPDATE_MIN = 1.0	-- Random yield times from events from OnUpdate
 local YIELD_TIME_UPDATE_MAX = 3.0
 
----
+-- Run-time storages:
 
 local Data = {
 	GlobalDataStore = {};
@@ -115,9 +116,9 @@ local Data = {
 
 local Interfaces = {}
 
----
+-- Helper services and functions:
 
-local HttpService = game:GetService("HttpService") -- for JSON encode/decode
+local HttpService = game:GetService("HttpService") -- For JSON encode/decode
 
 local rand = Random.new()
 
@@ -133,8 +134,7 @@ local function deepcopy(t)
 	end
 end
 
--- Credit to Corecii
-local function scanValidity(tbl, passed, path)
+local function scanValidity(tbl, passed, path) -- Credit to Corecii (edited)
 	if type(tbl) ~= "table" then
 		return scanValidity({input = tbl}, {}, {})
 	end
@@ -155,7 +155,7 @@ local function scanValidity(tbl, passed, path)
 		if type(key) == "number" then
 			if tblType == "Dictionary" then
 				return false, path, "cannot store mixed tables"
-			elseif key%1 ~= 0 then  -- if not an integer
+			elseif key%1 ~= 0 then
 				return false, path, "cannot store tables with non-integer indices"
 			elseif key == math.huge or key == -math.huge then
 				return false, path, "cannot store tables with (-)infinity indices"
@@ -189,11 +189,11 @@ local function scanValidity(tbl, passed, path)
 	return true
 end
 
--- Credit to Corecii
 local function getStringPath(path)
 	return table.concat(path, '.')
 end
 
+-- Import into a single datastore:
 local function importPairsFromTable(origin, destination, warnFunc, methodName, prefix, isOrdered)
 	for key, value in pairs(origin) do
 		if typeof(key) ~= "string" then
@@ -222,8 +222,8 @@ local function importPairsFromTable(origin, destination, warnFunc, methodName, p
 			if isValid then
 				local old = destination[key]
 				destination[key] = value
-				if Interfaces[destination] and old ~= value then
-					if isOrdered and Interfaces[destination] then
+				if Interfaces[destination] and old ~= value then -- hacky block to fire OnUpdate signals
+					if isOrdered and Interfaces[destination] then -- hacky block to populate internal structures for OrderedDataStores
 						if Interfaces[destination].__ref[key] then
 							Interfaces[destination].__ref[key].Value = value
 							Interfaces[destination].__changed = true
@@ -242,6 +242,7 @@ local function importPairsFromTable(origin, destination, warnFunc, methodName, p
 	end
 end
 
+-- Import into an entire datastore type:
 local function importDataStoresFromTable(origin, destination, warnFunc, methodName, prefix, isOrdered)
 	for name, scopes in pairs(origin) do
 		if typeof(name) ~= "string" then
@@ -276,7 +277,7 @@ local function importDataStoresFromTable(origin, destination, warnFunc, methodNa
 	end
 end
 
----
+-- GlobalDataStore implementation:
 
 local DataStore = {}
 DataStore.__index = DataStore
@@ -509,7 +510,35 @@ function DataStore:ImportFromJSON(json, verbose)
 	
 end
 
----
+-- DataStorePages implementation:
+
+local DataStorePages = {}
+DataStorePages.__index = DataStorePages
+
+function DataStorePages:GetCurrentPage()
+	local retValue = {}
+	for i = math.max(1, (self.__currentpage - 1) * self.__pagesize + 1), math.min(self.__currentpage * self.__pagesize, #self.__results) do
+		table.insert(retValue, self.__results[i]) -- No need to deepcopy, results only contains numbers that are passed by value
+	end
+	return retValue
+end
+
+function DataStorePages:AdvanceToNextPageAsync()
+	
+	if self.IsFinished then
+		return
+	end
+	
+	self.__currentpage = self.__currentpage + 1
+	self.IsFinished = #self.__results <= self.__currentpage * self.__pagesize
+	
+	if YIELD_TIME_MAX > 0 then
+		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
+	end
+	
+end
+
+-- OrderedDataStore implementation:
 
 local OrderedDataStore = {}
 OrderedDataStore.__index = OrderedDataStore
@@ -707,32 +736,6 @@ function OrderedDataStore:UpdateAsync(key, transformFunction)
 	
 end
 
-local DataStorePages = {}
-DataStorePages.__index = DataStorePages
-
-function DataStorePages:GetCurrentPage()
-	local retValue = {}
-	for i = math.max(1, (self.__currentpage - 1) * self.__pagesize + 1), math.min(self.__currentpage * self.__pagesize, #self.__results) do
-		table.insert(retValue, self.__results[i])
-	end
-	return retValue
-end
-
-function DataStorePages:AdvanceToNextPageAsync()
-	
-	if self.IsFinished then
-		return
-	end
-	
-	self.__currentpage = self.__currentpage + 1
-	self.IsFinished = #self.__results <= self.__currentpage * self.__pagesize
-	
-	if YIELD_TIME_MAX > 0 then
-		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
-	end
-	
-end
-
 function OrderedDataStore:GetSortedAsync(ascending, pagesize, minValue, maxValue)
 	if typeof(ascending) ~= "boolean" then
 		error("bad argument #1 to 'GetSortedAsync' (boolean expected, got " .. typeof(ascending) .. ")", 2)
@@ -827,7 +830,7 @@ function OrderedDataStore:ImportFromJSON(json, verbose)
 		end
 		content = value
 	elseif typeof(json) == "table" then
-		content = json
+		content = json -- No need to deepcopy, OrderedDataStore only contains numbers which are passed by value
 	else
 		error("bad argument #1 to 'ImportFromJSON' (string or table expected, got " .. typeof(json) .. ")", 2)
 	end
@@ -843,11 +846,11 @@ function OrderedDataStore:ImportFromJSON(json, verbose)
 	
 end
 
----
+-- MockDataStoreService implementation:
 
 local MockDataStoreService = {}
 
-local function makeGetWrapper(methodName, getObject, isGlobal)
+local function makeGetWrapper(methodName, getObject, isGlobal) -- Helper function to reduce amount of redundant code
 	return function(_, name, scope)
 		if not game:GetService("RunService"):IsServer() then
 			error("DataStore can't be accessed from client", 2)
@@ -888,10 +891,9 @@ MockDataStoreService.GetDataStore = makeGetWrapper(
 			local value = {
 				__name = name;
 				__scope = scope;
-				__data = Data.DataStore[name][scope];
-				__event = Instance.new("BindableEvent");
+				__data = Data.DataStore[name][scope]; -- Mapping from <key> to <value>
+				__event = Instance.new("BindableEvent"); -- For OnUpdate
 			}
-			value.__event.Event:connect(function() end)
 			Interfaces[Data.DataStore[name][scope]] = setmetatable(value, DataStore)
 		end
 		return Interfaces[Data.DataStore[name][scope]]
@@ -903,15 +905,14 @@ MockDataStoreService.GetGlobalDataStore = makeGetWrapper(
 	function()
 		if not Interfaces[Data.GlobalDataStore] then
 			local value = {
-				__data = Data.GlobalDataStore;
-				__event = Instance.new("BindableEvent");
+				__data = Data.GlobalDataStore; -- Mapping from <key> to <value>
+				__event = Instance.new("BindableEvent"); -- For OnUpdate
 			}
-			value.__event.Event:connect(function() end)
 			Interfaces[Data.GlobalDataStore] = setmetatable(value, DataStore)
 		end
 		return Interfaces[Data.GlobalDataStore]
 	end,
-	true
+	true -- This is the global datastore, no name/scope needed
 )
 
 MockDataStoreService.GetOrderedDataStore = makeGetWrapper(
@@ -927,13 +928,12 @@ MockDataStoreService.GetOrderedDataStore = makeGetWrapper(
 			local value = {
 				__name = name;
 				__scope = scope;
-				__data = Data.OrderedDataStore[name][scope];
-				__sorted = {};
-				__ref = {};
-				__changed = false;
-				__event = Instance.new("BindableEvent");
+				__data = Data.OrderedDataStore[name][scope]; -- Mapping from <key> to <value>
+				__sorted = {}; -- List of {Key = <key>, Value = <value>} pairs
+				__ref = {}; -- Mapping from <key> to corresponding {Key = <key>, Value = <value>} entry in __sorted 
+				__changed = false; -- Whether __sorted is guaranteed sorted at the moment
+				__event = Instance.new("BindableEvent"); -- For OnUpdate
 			}
-			value.__event.Event:connect(function() end)
 			Interfaces[Data.OrderedDataStore[name][scope]] = setmetatable(value, OrderedDataStore)
 		end
 		return Interfaces[Data.OrderedDataStore[name][scope]]
@@ -947,7 +947,7 @@ local budgetMapping = {
 	[Enum.DataStoreRequestType.SetIncrementAsync] = 60;
 	[Enum.DataStoreRequestType.SetIncrementSortedAsync] = 60;
 	[Enum.DataStoreRequestType.UpdateAsync] = 60;
-	Default = 50;
+	Default = 0;
 }
 
 function MockDataStoreService:GetRequestBudgetForRequestType(requestType)
@@ -1064,7 +1064,5 @@ function MockDataStoreService:ImportFromJSON(json, verbose)
 	end
 	
 end
-
----
 
 return MockDataStoreService
