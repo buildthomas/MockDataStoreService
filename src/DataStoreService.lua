@@ -8,7 +8,7 @@
 		Copyright 2018 buildthomas
 ]]
 
-local MockDataStoreServiceModule = script.Parent.MockDataStoreService -- set this as path to the module
+local MockDataStoreServiceModule = script.Parent.MockDataStoreService -- Set this as path to the module
 
 local shouldUseMock = false
 if game.GameId == 0 then
