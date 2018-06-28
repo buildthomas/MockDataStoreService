@@ -1,46 +1,54 @@
---[[
-	
+--[[	MockDataStoreService.lua
+	This module emulates datastores and provides exporting/importing capabilities
+	for seamless offline/local testing and development.
+
+	This module is licensed under APLv2, refer to the LICENSE file or:
+	https://www.apache.org/licenses/LICENSE-2.0
+
+	To use this code, you must keep this notice in all copies of (significant pieces of) this code.
+	Copyright 2018 buildthomas
+
 	Documentation:
 	--------------
-	
+
 	MockDataStoreService API:
-	
+
 		See members of DataStoreService:
 		> https://wiki.roblox.com/index.php?title=API:Class/DataStoreService
-		
+
 		MockDataStoreService:ExportToJSON()
 			Dumps the contents of all datastores to a JSON string that
 			can be loaded via MockDataStoreService:ImportFromJSON(...)
-			
+
 		MockDataStoreService:ImportFromJSON(json, verbose = true)
 			Loads the contents of datastores defined by the json parameter
 			(a string or table) provided to the method.
 			The verbose parameter determines whether warnings will be
 			printed when the json table/string contains invalid entries.
-	
-	
+
+
 	GlobalDataStore/OrderedDataStore API:
-		
+
 		See members of GlobalDataStore / OrderedDataStore:
 		> https://wiki.roblox.com/index.php?title=API:Class/GlobalDataStore
 		> https://wiki.roblox.com/index.php?title=API:Class/OrderedDataStore
-		
+
 		GlobalDataStore:ExportToJSON()
 		OrderedDataStore:ExportToJSON()
 			Dumps the contents of only this datastore to a JSON string that
 			can be loaded via DataStore:ImportFromJSON(...)
-			
+
 		GlobalDataStore:ImportFromJSON(json, verbose = true)
 		OrderedDataStore:ImportFromJSON(json, verbose = true)
 			Loads the contents of a datastore defined by the json parameter
 			(a string or table) provided to the method.
 			The verbose parameter determines whether warnings will be
 			printed when the json table/string contains invalid entries.
-	
+
 	-----
-	
-	Format of JSON output table for full datastore services:
-	
+
+	Format of JSON input/output table for full datastore services:
+
 		Data = {
 			GlobalDataStore = {
 				[key] = [value];
@@ -67,16 +75,22 @@
 				...
 			}
 		}
-		
+
+		None of Data.GlobalDataStore, Data.DataStore, Data.OrderedDataStore are compulsory.
+		When importing, only the valid parts of the structure/entries are processed.
+		When exporting, only non-empty sections of this format are present in the output.
+
 	-----
-		
-	Format of JSON output table for a single datastore:
-	
+
+	Format of JSON input/output table for a single datastore:
+
 		Data = {
 			[key] = [value];
 			...
 		};
-	
+
+		When importing, only the valid parts of the structure/entries are processed.
+
 ]]
 
 local MAX_LENGTH_KEY = 50			-- Max number of chars in key string
