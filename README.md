@@ -78,6 +78,12 @@ print(DataStoreService:ExportToJSON())
 
 ```
 
+Review the API of datastores here:
+- http://wiki.roblox.com/index.php?title=API:Class/DataStoreService
+- http://wiki.roblox.com/index.php?title=API:Class/GlobalDataStore
+- http://wiki.roblox.com/index.php?title=API:Class/OrderedDataStore
+- http://wiki.roblox.com/index.php?title=API:Class/DataStorePages
+
 There is also a small helper module provided ("DataStoreService") that automatically detects and selects which datastores should be used (real datastores for published games with API access, mock datastores for offline games / published games without API access).
 
 -----
