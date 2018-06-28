@@ -4,8 +4,11 @@ if game.GameId == 0 then
 	-- Local place file, use mock:
 	shouldUseMock = true
 elseif game:GetService("RunService"):IsStudio() then
-	-- Published file, check if API access is available:
-	local status, message = pcall(function() game:GetService("DataStoreService"):GetDataStore("__TEST"):UpdateAsync("__TEST", function(...) return ... end) end)
+	-- Published file in Studio, check if API access is available:
+	local status, message = pcall(function()
+		-- This will error if current instance has no Studio API access:
+		game:GetService("DataStoreService"):GetDataStore("__TEST"):UpdateAsync("__TEST", function(...) return ... end)
+	end)
 	if not status and (message:lower():find("api access") or message:lower():find("http 403")) then
 		-- Can connect to datastores, but no API access, so use mock:
 		shouldUseMock = true
