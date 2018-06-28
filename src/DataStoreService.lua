@@ -1,11 +1,11 @@
 --[[	DataStoreService.lua
-	This module decides whether to use actual datastores or mock datastores depending on the environment.
-	
-	This module is licensed under APLv2, refer to the LICENSE file or:
-	https://www.apache.org/licenses/LICENSE-2.0
+		This module decides whether to use actual datastores or mock datastores depending on the environment.
 
-	To use this code, you must keep this notice in all copies of (significant pieces of) this code.
-	Copyright 2018 buildthomas
+		This module is licensed under APLv2, refer to the LICENSE file or:
+		https://www.apache.org/licenses/LICENSE-2.0
+
+		To use this code, you must keep this notice in all copies of (significant pieces of) this code.
+		Copyright 2018 buildthomas
 ]]
 
 local MockDataStoreServiceModule = script.Parent.MockDataStoreService -- set this as path to the module
