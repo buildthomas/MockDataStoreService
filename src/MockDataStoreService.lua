@@ -343,9 +343,18 @@ function DataStore:IncrementAsync(key, delta)
 		error("IncrementAsync rejected with error: cannot increment non-integer value", 2)
 	end
 	
+	if self.__writeCache[key] then
+		error("Request was throttled, a key can only be written to once every 6 seconds. Key = " .. key)
+	end
+	
 	delta = delta and math.floor(delta + .5) or 1
 	
 	self.__data[key] = (old or 0) + delta
+	
+	self.__writeCache[key] = true
+	delay(6, function()
+		self.__writeCache[key] = nil
+	end)
 	
 	if old == nil or delta ~= 0 then
 		self.__event:Fire(key, self.__data[key])
@@ -370,8 +379,17 @@ function DataStore:RemoveAsync(key)
 		error("bad argument #1 to 'RemoveAsync' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
 	
+	if self.__writeCache[key] then
+		error("Request was throttled, a key can only be written to once every 6 seconds. Key = " .. key)
+	end
+	
 	local value = deepcopy(self.__data[key])
 	self.__data[key] = nil
+	
+	self.__writeCache[key] = true
+	delay(6, function()
+		self.__writeCache[key] = nil
+	end)
 	
 	if value ~= nil then
 		self.__event:Fire(key, nil)
@@ -413,15 +431,24 @@ function DataStore:SetAsync(key, value)
 		end
 	end
 	
+	if self.__writeCache[key] then
+		error("Request was throttled, a key can only be written to once every 6 seconds. Key = " .. key)
+	end
+	
 	if typeof(value) == "table" or value ~= self.__data[key] then
 		self.__data[key] = deepcopy(value)
 		self.__event:Fire(key, self.__data[key])
 	end
 	
+	self.__writeCache[key] = true
+	delay(6, function()
+		self.__writeCache[key] = nil
+	end)
+	
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
-	
+
 end
 
 function DataStore:UpdateAsync(key, transformFunction)
@@ -433,6 +460,10 @@ function DataStore:UpdateAsync(key, transformFunction)
 		error("bad argument #1 to 'UpdateAsync' (key name can't be empty)", 2)
 	elseif #key > MAX_LENGTH_KEY then
 		error("bad argument #1 to 'UpdateAsync' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
+	end
+	
+	if self.__writeCache[key] then
+		error("Request was throttled, a key can only be written to once every 6 seconds. Key = " .. key)
 	end
 	
 	local value = transformFunction(deepcopy(self.__data[key]))
@@ -464,6 +495,11 @@ function DataStore:UpdateAsync(key, transformFunction)
 	end
 	
 	local retValue = deepcopy(value)
+	
+	self.__writeCache[key] = true
+	delay(6, function()
+		self.__writeCache[key] = nil
+	end)
 	
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
@@ -893,6 +929,7 @@ MockDataStoreService.GetDataStore = makeGetWrapper(
 				__scope = scope;
 				__data = Data.DataStore[name][scope]; -- Mapping from <key> to <value>
 				__event = Instance.new("BindableEvent"); -- For OnUpdate
+				__writeCache = {};
 			}
 			Interfaces[Data.DataStore[name][scope]] = setmetatable(value, DataStore)
 		end
@@ -907,6 +944,7 @@ MockDataStoreService.GetGlobalDataStore = makeGetWrapper(
 			local value = {
 				__data = Data.GlobalDataStore; -- Mapping from <key> to <value>
 				__event = Instance.new("BindableEvent"); -- For OnUpdate
+				__writeCache = {};
 			}
 			Interfaces[Data.GlobalDataStore] = setmetatable(value, DataStore)
 		end
@@ -933,6 +971,7 @@ MockDataStoreService.GetOrderedDataStore = makeGetWrapper(
 				__ref = {}; -- Mapping from <key> to corresponding {Key = <key>, Value = <value>} entry in __sorted 
 				__changed = false; -- Whether __sorted is guaranteed sorted at the moment
 				__event = Instance.new("BindableEvent"); -- For OnUpdate
+				__writeCache = {};
 			}
 			Interfaces[Data.OrderedDataStore[name][scope]] = setmetatable(value, OrderedDataStore)
 		end
