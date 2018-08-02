@@ -631,6 +631,10 @@ function OrderedDataStore:IncrementAsync(key, delta)
 		error("bad argument #1 to 'IncrementAsync' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
 	
+	if self.__writeCache[key] then
+		error("Request was throttled, a key can only be written to once every 6 seconds. Key = " .. key)
+	end
+	
 	local old = self.__data[key]
 	
 	if old ~= nil and (typeof(old) ~= "number" or old%1 ~= 0) then
@@ -655,6 +659,11 @@ function OrderedDataStore:IncrementAsync(key, delta)
 		self.__event:Fire(key, self.__data[key])
 	end
 	
+	self.__writeCache[key] = true
+	delay(6, function()
+		self.__writeCache[key] = nil
+	end)
+	
 	local retValue = self.__data[key]
 	
 	if YIELD_TIME_MAX > 0 then
@@ -674,6 +683,10 @@ function OrderedDataStore:RemoveAsync(key)
 		error("bad argument #1 to 'RemoveAsync' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
 	
+	if self.__writeCache[key] then
+		error("Request was throttled, a key can only be written to once every 6 seconds. Key = " .. key)
+	end
+	
 	local value = self.__data[key]
 	
 	if value ~= nil then
@@ -687,6 +700,11 @@ function OrderedDataStore:RemoveAsync(key)
 		end
 		self.__event:Fire(key, nil)
 	end
+	
+	self.__writeCache[key] = true
+	delay(6, function()
+		self.__writeCache[key] = nil
+	end)
 	
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
@@ -709,6 +727,10 @@ function OrderedDataStore:SetAsync(key, value)
 		error("bad argument #2 to 'SetAsync' (cannot store non-integer values in OrderedDataStore)", 2)
 	end
 	
+	if self.__writeCache[key] then
+		error("Request was throttled, a key can only be written to once every 6 seconds. Key = " .. key)
+	end
+	
 	local old = self.__data[key]
 	
 	if old == nil then
@@ -723,6 +745,11 @@ function OrderedDataStore:SetAsync(key, value)
 		self.__changed = true
 		self.__event:Fire(key, self.__data[key])
 	end
+	
+	self.__writeCache[key] = true
+	delay(6, function()
+		self.__writeCache[key] = nil
+	end)
 	
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
@@ -741,6 +768,10 @@ function OrderedDataStore:UpdateAsync(key, transformFunction)
 		error("bad argument #1 to 'UpdateAsync' (key name can't be empty)", 2)
 	elseif #key > MAX_LENGTH_KEY then
 		error("bad argument #1 to 'UpdateAsync' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
+	end
+	
+	if self.__writeCache[key] then
+		error("Request was throttled, a key can only be written to once every 6 seconds. Key = " .. key)
 	end
 	
 	local value = transformFunction(self.__data[key])
@@ -763,6 +794,11 @@ function OrderedDataStore:UpdateAsync(key, transformFunction)
 		self.__changed = true
 		self.__event:Fire(key, self.__data[key])
 	end
+
+	self.__writeCache[key] = true
+	delay(6, function()
+		self.__writeCache[key] = nil
+	end)
 	
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
