@@ -293,12 +293,12 @@ function DataStore:OnUpdate(key, callback)
 		error("bad argument #1 to 'OnUpdate' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
 	
-	return self.__event.Event:connect(function(k, v)
+	return self.__event.Event:Connect(function(k, v)
 		if k == key then
 			if YIELD_TIME_UPDATE_MAX > 0 then
 				wait(rand:NextNumber(YIELD_TIME_UPDATE_MIN, YIELD_TIME_UPDATE_MAX))
 			end
-			callback(v)
+			callback(v) -- v was implicitly deep-copied
 		end
 	end)
 	
@@ -554,12 +554,12 @@ function OrderedDataStore:OnUpdate(key, callback)
 		error("bad argument #1 to 'OnUpdate' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
 	
-	return self.__event.Event:connect(function(k, v)
+	return self.__event.Event:Connect(function(k, v)
 		if k == key then
 			if YIELD_TIME_UPDATE_MAX > 0 then
 				wait(rand:NextNumber(YIELD_TIME_UPDATE_MIN, YIELD_TIME_UPDATE_MAX))
 			end
-			callback(v)
+			callback(v) -- v was implicitly deep-copied
 		end
 	end)
 	
