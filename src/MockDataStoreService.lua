@@ -298,7 +298,7 @@ function DataStore:OnUpdate(key, callback)
 			if YIELD_TIME_UPDATE_MAX > 0 then
 				wait(rand:NextNumber(YIELD_TIME_UPDATE_MIN, YIELD_TIME_UPDATE_MAX))
 			end
-			callback(deepcopy(v))
+			callback(v)
 		end
 	end)
 	
@@ -559,7 +559,7 @@ function OrderedDataStore:OnUpdate(key, callback)
 			if YIELD_TIME_UPDATE_MAX > 0 then
 				wait(rand:NextNumber(YIELD_TIME_UPDATE_MIN, YIELD_TIME_UPDATE_MAX))
 			end
-			callback(deepcopy(v))
+			callback(v)
 		end
 	end)
 	
