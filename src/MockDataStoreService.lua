@@ -106,6 +106,8 @@ local YIELD_TIME_MAX = 1.0
 local YIELD_TIME_UPDATE_MIN = 1.0	-- Random yield times from events from OnUpdate
 local YIELD_TIME_UPDATE_MAX = 3.0
 
+local WRITE_COOLDOWN = 6.0    -- Amount of cooldown between writes on the same key in a particular datastore
+
 -- Run-time storages:
 
 local Data = {
@@ -292,16 +294,16 @@ function DataStore:OnUpdate(key, callback)
 	elseif #key > MAX_LENGTH_KEY then
 		error("bad argument #1 to 'OnUpdate' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
-	
-	return self.__event.Event:connect(function(k, v)
+  
+	return self.__event.Event:Connect(function(k, v)
 		if k == key then
 			if YIELD_TIME_UPDATE_MAX > 0 then
 				wait(rand:NextNumber(YIELD_TIME_UPDATE_MIN, YIELD_TIME_UPDATE_MAX))
 			end
-			callback(deepcopy(v))
+			callback(v) -- v was implicitly deep-copied
 		end
 	end)
-	
+
 end
 
 function DataStore:GetAsync(key)
@@ -312,15 +314,15 @@ function DataStore:GetAsync(key)
 	elseif #key > MAX_LENGTH_KEY then
 		error("bad argument #1 to 'GetAsync' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
-	
+
 	local retValue = deepcopy(self.__data[key])
-	
+
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
-	
+
 	return retValue
-	
+
 end
 
 function DataStore:IncrementAsync(key, delta)
@@ -333,41 +335,41 @@ function DataStore:IncrementAsync(key, delta)
 	elseif #key > MAX_LENGTH_KEY then
 		error("bad argument #1 to 'IncrementAsync' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
-	
+
 	local old = self.__data[key]
-	
+
 	if old ~= nil and (typeof(old) ~= "number" or old%1 ~= 0) then
 		if YIELD_TIME_MAX > 0 then
 			wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 		end
 		error("IncrementAsync rejected with error: cannot increment non-integer value", 2)
 	end
-	
+  
 	if self.__writeCache[key] then
-		error("Request was throttled, a key can only be written to once every 6 seconds. Key = " .. key)
+		return warn("Request was throttled, a key can only be written to once every " .. WRITE_COOLDOWN .. " seconds. Key = " .. key)
 	end
-	
+  
 	delta = delta and math.floor(delta + .5) or 1
-	
+
 	self.__data[key] = (old or 0) + delta
-	
+  
 	self.__writeCache[key] = true
-	delay(6, function()
+	delay(WRITE_COOLDOWN, function()
 		self.__writeCache[key] = nil
 	end)
-	
+  
 	if old == nil or delta ~= 0 then
 		self.__event:Fire(key, self.__data[key])
 	end
-	
+
 	local retValue = self.__data[key]
-	
+
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
-	
+
 	return retValue
-	
+
 end
 
 function DataStore:RemoveAsync(key)
@@ -380,27 +382,27 @@ function DataStore:RemoveAsync(key)
 	end
 	
 	if self.__writeCache[key] then
-		error("Request was throttled, a key can only be written to once every 6 seconds. Key = " .. key)
+		return warn("Request was throttled, a key can only be written to once every " .. WRITE_COOLDOWN .. " seconds. Key = " .. key)
 	end
 	
 	local value = deepcopy(self.__data[key])
 	self.__data[key] = nil
 	
 	self.__writeCache[key] = true
-	delay(6, function()
+	delay(WRITE_COOLDOWN, function()
 		self.__writeCache[key] = nil
 	end)
 	
 	if value ~= nil then
 		self.__event:Fire(key, nil)
 	end
-	
+
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
-	
+
 	return value
-	
+
 end
 
 function DataStore:SetAsync(key, value)
@@ -413,7 +415,7 @@ function DataStore:SetAsync(key, value)
 	elseif value == nil or type(value) == "function" or type(value) == "userdata" or type(value) == "thread" then
 		error("bad argument #2 to 'SetAsync' (cannot store values of type " .. typeof(value) .. ")", 2)
 	end
-	
+
 	if typeof(value) == "table" then
 		local isValid, keyPath, reason = scanValidity(value)
 		if not isValid then
@@ -432,7 +434,7 @@ function DataStore:SetAsync(key, value)
 	end
 	
 	if self.__writeCache[key] then
-		error("Request was throttled, a key can only be written to once every 6 seconds. Key = " .. key)
+		return warn("Request was throttled, a key can only be written to once every " .. WRITE_COOLDOWN .. " seconds. Key = " .. key)
 	end
 	
 	if typeof(value) == "table" or value ~= self.__data[key] then
@@ -441,10 +443,10 @@ function DataStore:SetAsync(key, value)
 	end
 	
 	self.__writeCache[key] = true
-	delay(6, function()
+	delay(WRITE_COOLDOWN, function()
 		self.__writeCache[key] = nil
 	end)
-	
+
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
@@ -461,17 +463,13 @@ function DataStore:UpdateAsync(key, transformFunction)
 	elseif #key > MAX_LENGTH_KEY then
 		error("bad argument #1 to 'UpdateAsync' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
-	
-	if self.__writeCache[key] then
-		error("Request was throttled, a key can only be written to once every 6 seconds. Key = " .. key)
-	end
-	
+  
 	local value = transformFunction(deepcopy(self.__data[key]))
-	
+
 	if value == nil or type(value) == "function" or type(value) == "userdata" or type(value) == "thread" then
 		error("bad argument #2 to 'UpdateAsync' (resulting value is of type " .. typeof(value) .. " that cannot be stored)", 2)
-	end 
-	
+	end
+
 	if typeof(value) == "table" then
 		local isValid, keyPath, reason = scanValidity(value)
 		if not isValid then
@@ -488,25 +486,29 @@ function DataStore:UpdateAsync(key, transformFunction)
 			error("bad argument #2 to 'UpdateAsync' (resulting data length exceeds " .. MAX_LENGTH_DATA .. " character limit)", 2)
 		end
 	end
-	
+  
+  if self.__writeCache[key] then
+		return warn("Request was throttled, a key can only be written to once every " .. WRITE_COOLDOWN .. " seconds. Key = " .. key)
+	end
+
 	if typeof(value) == "table" or value ~= self.__data[key] then
 		self.__data[key] = deepcopy(value)
 		self.__event:Fire(key, self.__data[key])
 	end
-	
+
 	local retValue = deepcopy(value)
 	
 	self.__writeCache[key] = true
-	delay(6, function()
+	delay(WRITE_COOLDOWN, function()
 		self.__writeCache[key] = nil
 	end)
 	
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
-	
+
 	return retValue
-	
+
 end
 
 function DataStore:ExportToJSON()
@@ -514,9 +516,9 @@ function DataStore:ExportToJSON()
 end
 
 function DataStore:ImportFromJSON(json, verbose)
-	
+
 	local content
-	
+
 	if typeof(json) == "string" then
 		local parsed, value = pcall(function() return HttpService:JSONDecode(json) end)
 		if not parsed then
@@ -528,11 +530,11 @@ function DataStore:ImportFromJSON(json, verbose)
 	else
 		error("bad argument #1 to 'ImportFromJSON' (string or table expected, got " .. typeof(json) .. ")", 2)
 	end
-	
+
 	if verbose ~= nil and typeof(verbose) ~= "boolean" then
 		error("bad argument #2 to 'ImportFromJSON' (boolean expected, got " .. typeof(verbose) .. ")", 2)
 	end
-	
+
 	importPairsFromTable(
 		content,
 		self.__data,
@@ -543,7 +545,7 @@ function DataStore:ImportFromJSON(json, verbose)
 			or "GlobalDataStore"),
 		false
 	)
-	
+
 end
 
 -- DataStorePages implementation:
@@ -560,18 +562,18 @@ function DataStorePages:GetCurrentPage()
 end
 
 function DataStorePages:AdvanceToNextPageAsync()
-	
+
 	if self.IsFinished then
 		return
 	end
-	
+
 	self.__currentpage = self.__currentpage + 1
 	self.IsFinished = #self.__results <= self.__currentpage * self.__pagesize
-	
+
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
-	
+
 end
 
 -- OrderedDataStore implementation:
@@ -589,16 +591,16 @@ function OrderedDataStore:OnUpdate(key, callback)
 	elseif #key > MAX_LENGTH_KEY then
 		error("bad argument #1 to 'OnUpdate' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
-	
-	return self.__event.Event:connect(function(k, v)
+
+	return self.__event.Event:Connect(function(k, v)
 		if k == key then
 			if YIELD_TIME_UPDATE_MAX > 0 then
 				wait(rand:NextNumber(YIELD_TIME_UPDATE_MIN, YIELD_TIME_UPDATE_MAX))
 			end
-			callback(deepcopy(v))
+			callback(v) -- v was implicitly deep-copied
 		end
 	end)
-	
+
 end
 
 function OrderedDataStore:GetAsync(key)
@@ -609,15 +611,15 @@ function OrderedDataStore:GetAsync(key)
 	elseif #key > MAX_LENGTH_KEY then
 		error("bad argument #1 to 'GetAsync' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
-	
+
 	local retValue = self.__data[key]
-	
+
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
-	
+
 	return retValue
-	
+
 end
 
 function OrderedDataStore:IncrementAsync(key, delta)
@@ -630,22 +632,22 @@ function OrderedDataStore:IncrementAsync(key, delta)
 	elseif #key > MAX_LENGTH_KEY then
 		error("bad argument #1 to 'IncrementAsync' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
-	
-	if self.__writeCache[key] then
-		error("Request was throttled, a key can only be written to once every 6 seconds. Key = " .. key)
-	end
-	
+  
 	local old = self.__data[key]
-	
+
 	if old ~= nil and (typeof(old) ~= "number" or old%1 ~= 0) then
 		if YIELD_TIME_MAX > 0 then
 			wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 		end
 		error("IncrementAsync rejected with error: cannot increment non-integer value", 2)
 	end
-	
+  
+  if self.__writeCache[key] then
+		return warn("Request was throttled, a key can only be written to once every " .. WRITE_COOLDOWN .. " seconds. Key = " .. key)
+	end
+
 	delta = delta and math.floor(delta + .5) or 1
-	
+
 	if old == nil then
 		self.__data[key] = delta
 		self.__ref[key] = {Key = key, Value = self.__data[key]}
@@ -658,20 +660,20 @@ function OrderedDataStore:IncrementAsync(key, delta)
 		self.__changed = true
 		self.__event:Fire(key, self.__data[key])
 	end
-	
+  
 	self.__writeCache[key] = true
-	delay(6, function()
+	delay(WRITE_COOLDOWN, function()
 		self.__writeCache[key] = nil
 	end)
-	
+  
 	local retValue = self.__data[key]
-	
+
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
-	
+
 	return retValue
-	
+
 end
 
 function OrderedDataStore:RemoveAsync(key)
@@ -684,11 +686,11 @@ function OrderedDataStore:RemoveAsync(key)
 	end
 	
 	if self.__writeCache[key] then
-		error("Request was throttled, a key can only be written to once every 6 seconds. Key = " .. key)
+		return warn("Request was throttled, a key can only be written to once every " .. WRITE_COOLDOWN .. " seconds. Key = " .. key)
 	end
-	
+  
 	local value = self.__data[key]
-	
+
 	if value ~= nil then
 		self.__data[key] = nil
 		self.__ref[key] = nil
@@ -700,18 +702,18 @@ function OrderedDataStore:RemoveAsync(key)
 		end
 		self.__event:Fire(key, nil)
 	end
-	
+  
 	self.__writeCache[key] = true
-	delay(6, function()
+	delay(WRITE_COOLDOWN, function()
 		self.__writeCache[key] = nil
 	end)
-	
+  
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
-	
+
 	return value
-	
+
 end
 
 function OrderedDataStore:SetAsync(key, value)
@@ -726,13 +728,13 @@ function OrderedDataStore:SetAsync(key, value)
 	elseif value%1 ~= 0 then
 		error("bad argument #2 to 'SetAsync' (cannot store non-integer values in OrderedDataStore)", 2)
 	end
-	
+  
 	if self.__writeCache[key] then
-		error("Request was throttled, a key can only be written to once every 6 seconds. Key = " .. key)
+		return warn("Request was throttled, a key can only be written to once every " .. WRITE_COOLDOWN .. " seconds. Key = " .. key)
 	end
-	
+  
 	local old = self.__data[key]
-	
+
 	if old == nil then
 		self.__data[key] = value
 		self.__ref[key] = {Key = key, Value = value}
@@ -745,18 +747,18 @@ function OrderedDataStore:SetAsync(key, value)
 		self.__changed = true
 		self.__event:Fire(key, self.__data[key])
 	end
-	
+  
 	self.__writeCache[key] = true
-	delay(6, function()
+	delay(WRITE_COOLDOWN, function()
 		self.__writeCache[key] = nil
 	end)
-	
+  
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
-	
+
 	return value
-	
+
 end
 
 function OrderedDataStore:UpdateAsync(key, transformFunction)
@@ -769,19 +771,19 @@ function OrderedDataStore:UpdateAsync(key, transformFunction)
 	elseif #key > MAX_LENGTH_KEY then
 		error("bad argument #1 to 'UpdateAsync' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
-	
-	if self.__writeCache[key] then
-		error("Request was throttled, a key can only be written to once every 6 seconds. Key = " .. key)
-	end
-	
+  
 	local value = transformFunction(self.__data[key])
-	
+
 	if type(value) ~= "number" or value%1 ~= 0 then
 		error("bad argument #2 to 'UpdateAsync' (resulting value is a non-integer which can't be stored in OrderedDataStore)", 2)
 	end
-	
+  
+  if self.__writeCache[key] then
+		return warn("Request was throttled, a key can only be written to once every " .. WRITE_COOLDOWN .. " seconds. Key = " .. key)
+	end
+
 	local old = self.__data[key]
-	
+
 	if old == nil then
 		self.__data[key] = value
 		self.__ref[key] = {Key = key, Value = value}
@@ -794,18 +796,18 @@ function OrderedDataStore:UpdateAsync(key, transformFunction)
 		self.__changed = true
 		self.__event:Fire(key, self.__data[key])
 	end
-
+  
 	self.__writeCache[key] = true
-	delay(6, function()
+	delay(WRITE_COOLDOWN, function()
 		self.__writeCache[key] = nil
 	end)
-	
+  
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
-	
+
 	return value
-	
+
 end
 
 function OrderedDataStore:GetSortedAsync(ascending, pagesize, minValue, maxValue)
@@ -814,12 +816,12 @@ function OrderedDataStore:GetSortedAsync(ascending, pagesize, minValue, maxValue
 	elseif typeof(pagesize) ~= "number" then
 		error("bad argument #2 to 'GetSortedAsync' (number expected, got " .. typeof(pagesize) .. ")", 2)
 	end
-	
+
 	pagesize = math.floor(pagesize + .5)
 	if pagesize <= 0 or pagesize > MAX_PAGE_SIZE then
 		error("bad argument #2 to 'GetSortedAsync' (page size must be an integer above 0 and below " .. MAX_PAGE_SIZE .. ")", 2)
 	end
-	
+
 	if minValue ~= nil then
 		if typeof(minValue) ~= "number" then
 			error("bad argument #3 to 'GetSortedAsync' (number expected, got " .. typeof(minValue) .. ")", 2)
@@ -829,7 +831,7 @@ function OrderedDataStore:GetSortedAsync(ascending, pagesize, minValue, maxValue
 	else
 		minValue = -math.huge
 	end
-	
+
 	if maxValue ~= nil then
 		if typeof(maxValue) ~= "number" then
 			error("bad argument #4 to 'GetSortedAsync' (number expected, got " .. typeof(maxValue) .. ")", 2)
@@ -839,21 +841,21 @@ function OrderedDataStore:GetSortedAsync(ascending, pagesize, minValue, maxValue
 	else
 		maxValue = math.huge
 	end
-	
+
 	if minValue > maxValue then
 		if YIELD_TIME_MAX > 0 then
 			wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 		end
 		error("GetSortedAsync rejected with error: minimum threshold is higher than maximum threshold", 2)
 	end
-	
+
 	if self.__changed then
 		table.sort(self.__sorted, function(a,b) return a.Value < b.Value end)
 		self.__changed = false
 	end
-	
+
 	local results = {}
-	
+
 	if ascending then
 		local i = 1
 		while self.__sorted[i] and self.__sorted[i].Value < minValue do
@@ -873,18 +875,18 @@ function OrderedDataStore:GetSortedAsync(ascending, pagesize, minValue, maxValue
 			i = i - 1
 		end
 	end
-	
+
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
-	
+
 	return setmetatable({
 		__currentpage = 1;
 		__pagesize = pagesize;
 		__results = results;
 		IsFinished = (#results <= pagesize);
 	}, DataStorePages)
-	
+
 end
 
 function OrderedDataStore:ExportToJSON()
@@ -892,9 +894,9 @@ function OrderedDataStore:ExportToJSON()
 end
 
 function OrderedDataStore:ImportFromJSON(json, verbose)
-	
+
 	local content
-	
+
 	if typeof(json) == "string" then
 		local parsed, value = pcall(function() return HttpService:JSONDecode(json) end)
 		if not parsed then
@@ -906,7 +908,7 @@ function OrderedDataStore:ImportFromJSON(json, verbose)
 	else
 		error("bad argument #1 to 'ImportFromJSON' (string or table expected, got " .. typeof(json) .. ")", 2)
 	end
-	
+
 	importPairsFromTable(
 		content,
 		self.__data,
@@ -915,7 +917,7 @@ function OrderedDataStore:ImportFromJSON(json, verbose)
 		("OrderedDataStore > %s > %s"):format(self.__name, self.__scope),
 		true
 	)
-	
+
 end
 
 -- MockDataStoreService implementation:
@@ -927,7 +929,7 @@ local function makeGetWrapper(methodName, getObject, isGlobal) -- Helper functio
 		if not game:GetService("RunService"):IsServer() then
 			error("DataStore can't be accessed from client", 2)
 		end
-		
+
 		if isGlobal then
 			return getObject()
 		else
@@ -946,7 +948,7 @@ local function makeGetWrapper(methodName, getObject, isGlobal) -- Helper functio
 			end
 			return getObject(name, scope or "global")
 		end
-		
+
 	end
 end
 
@@ -1004,7 +1006,7 @@ MockDataStoreService.GetOrderedDataStore = makeGetWrapper(
 				__scope = scope;
 				__data = Data.OrderedDataStore[name][scope]; -- Mapping from <key> to <value>
 				__sorted = {}; -- List of {Key = <key>, Value = <value>} pairs
-				__ref = {}; -- Mapping from <key> to corresponding {Key = <key>, Value = <value>} entry in __sorted 
+				__ref = {}; -- Mapping from <key> to corresponding {Key = <key>, Value = <value>} entry in __sorted
 				__changed = false; -- Whether __sorted is guaranteed sorted at the moment
 				__event = Instance.new("BindableEvent"); -- For OnUpdate
 				__writeCache = {};
@@ -1022,21 +1024,24 @@ local budgetMapping = {
 	[Enum.DataStoreRequestType.SetIncrementAsync] = 60;
 	[Enum.DataStoreRequestType.SetIncrementSortedAsync] = 60;
 	[Enum.DataStoreRequestType.UpdateAsync] = 60;
-	Default = 0;
 }
 
+local DataStoreRequestTypes = {}
+
+for _, Enumerator in ipairs(Enum.DataStoreRequestType:GetEnumItems()) do
+	DataStoreRequestTypes[Enumerator] = Enumerator
+	DataStoreRequestTypes[Enumerator.Name] = Enumerator
+	DataStoreRequestTypes[Enumerator.Value] = Enumerator
+end
+
 function MockDataStoreService:GetRequestBudgetForRequestType(requestType)
-	
-	if typeof(requestType) ~= "EnumItem" or requestType.EnumType ~= Enum.DataStoreRequestType then
-		error("bad argument #1 to 'GetRequestBudgetForRequestType' (DataStoreRequestType expected, got " .. typeof(requestType) .. ")", 2)
-	end
-	
-	return budgetMapping[requestType] or budgetMapping.Default
-	
+	return budgetMapping[
+		DataStoreRequestTypes[requestType] or error("bad argument #1 to 'GetRequestBudgetForRequestType' (unable to cast " .. typeof(requestType) .. " " .. tostring(requestType) .. " to DataStoreRequestType)", 2)
+	] or 0
 end
 
 function MockDataStoreService:ExportToJSON()
-	
+
 	local orderedData = {}
 	local numOrdered = 0
 	for name, scopes in pairs(Data.OrderedDataStore) do
@@ -1059,7 +1064,7 @@ function MockDataStoreService:ExportToJSON()
 			numOrdered = numOrdered + 1
 		end
 	end
-	
+
 	local regularData = {}
 	local numRegular = 0
 	for name, scopes in pairs(Data.DataStore) do
@@ -1082,15 +1087,15 @@ function MockDataStoreService:ExportToJSON()
 			numRegular = numRegular + 1
 		end
 	end
-	
+
 	local globalHasItems = false
 	for _, _ in pairs(Data.GlobalDataStore) do
 		globalHasItems = true
 		break
 	end
-	
+
 	local export = {}
-	
+
 	if globalHasItems then
 		export.GlobalDataStore = Data.GlobalDataStore
 	end
@@ -1100,15 +1105,15 @@ function MockDataStoreService:ExportToJSON()
 	if numRegular > 0 then
 		export.DataStore = regularData
 	end
-	
+
 	return HttpService:JSONEncode(export)
-	
+
 end
 
 function MockDataStoreService:ImportFromJSON(json, verbose)
-	
+
 	local content
-	
+
 	if typeof(json) == "string" then
 		local parsed, value = pcall(function() return HttpService:JSONDecode(json) end)
 		if not parsed then
@@ -1120,24 +1125,24 @@ function MockDataStoreService:ImportFromJSON(json, verbose)
 	else
 		error("bad argument #1 to 'ImportFromJSON' (string or table expected, got " .. typeof(json) .. ")", 2)
 	end
-	
+
 	local warnFunc = warn
 	if verbose == false then
 		warnFunc = function() end
 	end
-	
+
 	if typeof(content.GlobalDataStore) == "table" then
 		importPairsFromTable(content.GlobalDataStore, Data.GlobalDataStore, warnFunc, "ImportFromJSON", "GlobalDataStore", false)
 	end
-	
+
 	if typeof(content.DataStore) == "table" then
 		importDataStoresFromTable(content.DataStore, Data.DataStore, warnFunc, "ImportFromJSON", "DataStore", false)
 	end
-	
+
 	if typeof(content.OrderedDataStore) == "table" then
 		importDataStoresFromTable(content.OrderedDataStore, Data.OrderedDataStore, warnFunc, "ImportFromJSON", "OrderedDataStore", true)
 	end
-	
+
 end
 
 return MockDataStoreService
