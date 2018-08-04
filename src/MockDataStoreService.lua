@@ -106,6 +106,8 @@ local YIELD_TIME_MAX = 1.0
 local YIELD_TIME_UPDATE_MIN = 1.0	-- Random yield times from events from OnUpdate
 local YIELD_TIME_UPDATE_MAX = 3.0
 
+local WRITE_COOLDOWN = 6.0    -- Amount of cooldown between writes on the same key in a particular datastore
+
 -- Run-time storages:
 
 local Data = {
@@ -342,11 +344,20 @@ function DataStore:IncrementAsync(key, delta)
 		end
 		error("IncrementAsync rejected with error: cannot increment non-integer value", 2)
 	end
-
+  
+	if self.__writeCache[key] then
+		return warn("Request was throttled, a key can only be written to once every " .. WRITE_COOLDOWN .. " seconds. Key = " .. key)
+	end
+  
 	delta = delta and math.floor(delta + .5) or 1
 
 	self.__data[key] = (old or 0) + delta
-
+  
+	self.__writeCache[key] = true
+	delay(WRITE_COOLDOWN, function()
+		self.__writeCache[key] = nil
+	end)
+  
 	if old == nil or delta ~= 0 then
 		self.__event:Fire(key, self.__data[key])
 	end
@@ -369,10 +380,19 @@ function DataStore:RemoveAsync(key)
 	elseif #key > MAX_LENGTH_KEY then
 		error("bad argument #1 to 'RemoveAsync' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
-
+	
+	if self.__writeCache[key] then
+		return warn("Request was throttled, a key can only be written to once every " .. WRITE_COOLDOWN .. " seconds. Key = " .. key)
+	end
+	
 	local value = deepcopy(self.__data[key])
 	self.__data[key] = nil
-
+	
+	self.__writeCache[key] = true
+	delay(WRITE_COOLDOWN, function()
+		self.__writeCache[key] = nil
+	end)
+	
 	if value ~= nil then
 		self.__event:Fire(key, nil)
 	end
@@ -412,11 +432,20 @@ function DataStore:SetAsync(key, value)
 			error("bad argument #2 to 'SetAsync' (data length exceeds " .. MAX_LENGTH_DATA .. " character limit)", 2)
 		end
 	end
-
+	
+	if self.__writeCache[key] then
+		return warn("Request was throttled, a key can only be written to once every " .. WRITE_COOLDOWN .. " seconds. Key = " .. key)
+	end
+	
 	if typeof(value) == "table" or value ~= self.__data[key] then
 		self.__data[key] = deepcopy(value)
 		self.__event:Fire(key, self.__data[key])
 	end
+	
+	self.__writeCache[key] = true
+	delay(WRITE_COOLDOWN, function()
+		self.__writeCache[key] = nil
+	end)
 
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
@@ -434,7 +463,7 @@ function DataStore:UpdateAsync(key, transformFunction)
 	elseif #key > MAX_LENGTH_KEY then
 		error("bad argument #1 to 'UpdateAsync' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
-
+  
 	local value = transformFunction(deepcopy(self.__data[key]))
 
 	if value == nil or type(value) == "function" or type(value) == "userdata" or type(value) == "thread" then
@@ -457,6 +486,10 @@ function DataStore:UpdateAsync(key, transformFunction)
 			error("bad argument #2 to 'UpdateAsync' (resulting data length exceeds " .. MAX_LENGTH_DATA .. " character limit)", 2)
 		end
 	end
+  
+  if self.__writeCache[key] then
+		return warn("Request was throttled, a key can only be written to once every " .. WRITE_COOLDOWN .. " seconds. Key = " .. key)
+	end
 
 	if typeof(value) == "table" or value ~= self.__data[key] then
 		self.__data[key] = deepcopy(value)
@@ -464,7 +497,12 @@ function DataStore:UpdateAsync(key, transformFunction)
 	end
 
 	local retValue = deepcopy(value)
-
+	
+	self.__writeCache[key] = true
+	delay(WRITE_COOLDOWN, function()
+		self.__writeCache[key] = nil
+	end)
+	
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
@@ -594,7 +632,7 @@ function OrderedDataStore:IncrementAsync(key, delta)
 	elseif #key > MAX_LENGTH_KEY then
 		error("bad argument #1 to 'IncrementAsync' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
-
+  
 	local old = self.__data[key]
 
 	if old ~= nil and (typeof(old) ~= "number" or old%1 ~= 0) then
@@ -602,6 +640,10 @@ function OrderedDataStore:IncrementAsync(key, delta)
 			wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 		end
 		error("IncrementAsync rejected with error: cannot increment non-integer value", 2)
+	end
+  
+  if self.__writeCache[key] then
+		return warn("Request was throttled, a key can only be written to once every " .. WRITE_COOLDOWN .. " seconds. Key = " .. key)
 	end
 
 	delta = delta and math.floor(delta + .5) or 1
@@ -618,7 +660,12 @@ function OrderedDataStore:IncrementAsync(key, delta)
 		self.__changed = true
 		self.__event:Fire(key, self.__data[key])
 	end
-
+  
+	self.__writeCache[key] = true
+	delay(WRITE_COOLDOWN, function()
+		self.__writeCache[key] = nil
+	end)
+  
 	local retValue = self.__data[key]
 
 	if YIELD_TIME_MAX > 0 then
@@ -637,7 +684,11 @@ function OrderedDataStore:RemoveAsync(key)
 	elseif #key > MAX_LENGTH_KEY then
 		error("bad argument #1 to 'RemoveAsync' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
-
+	
+	if self.__writeCache[key] then
+		return warn("Request was throttled, a key can only be written to once every " .. WRITE_COOLDOWN .. " seconds. Key = " .. key)
+	end
+  
 	local value = self.__data[key]
 
 	if value ~= nil then
@@ -651,7 +702,12 @@ function OrderedDataStore:RemoveAsync(key)
 		end
 		self.__event:Fire(key, nil)
 	end
-
+  
+	self.__writeCache[key] = true
+	delay(WRITE_COOLDOWN, function()
+		self.__writeCache[key] = nil
+	end)
+  
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
@@ -672,7 +728,11 @@ function OrderedDataStore:SetAsync(key, value)
 	elseif value%1 ~= 0 then
 		error("bad argument #2 to 'SetAsync' (cannot store non-integer values in OrderedDataStore)", 2)
 	end
-
+  
+	if self.__writeCache[key] then
+		return warn("Request was throttled, a key can only be written to once every " .. WRITE_COOLDOWN .. " seconds. Key = " .. key)
+	end
+  
 	local old = self.__data[key]
 
 	if old == nil then
@@ -687,7 +747,12 @@ function OrderedDataStore:SetAsync(key, value)
 		self.__changed = true
 		self.__event:Fire(key, self.__data[key])
 	end
-
+  
+	self.__writeCache[key] = true
+	delay(WRITE_COOLDOWN, function()
+		self.__writeCache[key] = nil
+	end)
+  
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
@@ -706,11 +771,15 @@ function OrderedDataStore:UpdateAsync(key, transformFunction)
 	elseif #key > MAX_LENGTH_KEY then
 		error("bad argument #1 to 'UpdateAsync' (key name exceeds " .. MAX_LENGTH_KEY .. " character limit)", 2)
 	end
-
+  
 	local value = transformFunction(self.__data[key])
 
 	if type(value) ~= "number" or value%1 ~= 0 then
 		error("bad argument #2 to 'UpdateAsync' (resulting value is a non-integer which can't be stored in OrderedDataStore)", 2)
+	end
+  
+  if self.__writeCache[key] then
+		return warn("Request was throttled, a key can only be written to once every " .. WRITE_COOLDOWN .. " seconds. Key = " .. key)
 	end
 
 	local old = self.__data[key]
@@ -727,7 +796,12 @@ function OrderedDataStore:UpdateAsync(key, transformFunction)
 		self.__changed = true
 		self.__event:Fire(key, self.__data[key])
 	end
-
+  
+	self.__writeCache[key] = true
+	delay(WRITE_COOLDOWN, function()
+		self.__writeCache[key] = nil
+	end)
+  
 	if YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(YIELD_TIME_MIN, YIELD_TIME_MAX))
 	end
@@ -893,6 +967,7 @@ MockDataStoreService.GetDataStore = makeGetWrapper(
 				__scope = scope;
 				__data = Data.DataStore[name][scope]; -- Mapping from <key> to <value>
 				__event = Instance.new("BindableEvent"); -- For OnUpdate
+				__writeCache = {};
 			}
 			Interfaces[Data.DataStore[name][scope]] = setmetatable(value, DataStore)
 		end
@@ -907,6 +982,7 @@ MockDataStoreService.GetGlobalDataStore = makeGetWrapper(
 			local value = {
 				__data = Data.GlobalDataStore; -- Mapping from <key> to <value>
 				__event = Instance.new("BindableEvent"); -- For OnUpdate
+				__writeCache = {};
 			}
 			Interfaces[Data.GlobalDataStore] = setmetatable(value, DataStore)
 		end
@@ -933,6 +1009,7 @@ MockDataStoreService.GetOrderedDataStore = makeGetWrapper(
 				__ref = {}; -- Mapping from <key> to corresponding {Key = <key>, Value = <value>} entry in __sorted
 				__changed = false; -- Whether __sorted is guaranteed sorted at the moment
 				__event = Instance.new("BindableEvent"); -- For OnUpdate
+				__writeCache = {};
 			}
 			Interfaces[Data.OrderedDataStore[name][scope]] = setmetatable(value, OrderedDataStore)
 		end
