@@ -1,5 +1,0 @@
-{
-  "name": "MockDataStoreService",
-  "servePort": 8000,
-  "partitions": {}
-}
