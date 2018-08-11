@@ -27,7 +27,7 @@ end
 
 function DataStorePages:AdvanceToNextPageAsync()
 	if self.IsFinished then
-		return
+		error("Call to AdvanceToNextPageAsync failed: No pages to advance to", 2)
 	end
 
 	self.__currentpage = self.__currentpage + 1
