@@ -277,6 +277,7 @@ function MockGlobalDataStore:ImportFromJSON(json, verbose)
 	Utils.importPairsFromTable(
 		content,
 		self.__data,
+		Manager:GetDataInterface(self.__data),
 		(verbose == false and function() end or warn),
 		"ImportFromJSON",
 		((typeof(self.__name) == "string" and typeof(self.__scope) == "string")

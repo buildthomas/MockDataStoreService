@@ -211,6 +211,57 @@ function MockDataStoreManager:ExportToJSON()
 	return HttpService:JSONEncode(export)
 end
 
+-- Import into an entire datastore type:
+local function importDataStoresFromTable(origin, destination, warnFunc, methodName, prefix, isOrdered)
+	for name, scopes in pairs(origin) do
+		if typeof(name) ~= "string" then
+			warnFunc(("%s: ignored %s > '%s' (name is not a string, but a %s)")
+				:format(methodName, prefix, tostring(name), typeof(name)))
+		elseif typeof(scopes) ~= "table" then
+			warnFunc(("%s: ignored %s > '%s' (scope list is not a table, but a %s)")
+				:format(methodName, prefix, name, typeof(scopes)))
+		elseif #name == 0 then
+			warnFunc(("%s: ignored %s > '%s' (name is an empty string)")
+				:format(methodName, prefix, name))
+		elseif #name > Constants.MAX_LENGTH_NAME then
+			warnFunc(("%s: ignored %s > '%s' (name exceeds %d character limit)")
+				:format(methodName, prefix, name, Constants.MAX_LENGTH_NAME))
+		else
+			for scope, data in pairs(scopes) do
+				if typeof(scope) ~= "string" then
+					warnFunc(("%s: ignored %s > '%s' > '%s' (scope is not a string, but a %s)")
+						:format(methodName, prefix, name, tostring(scope), typeof(scope)))
+				elseif typeof(data) ~= "table" then
+					warnFunc(("%s: ignored %s > '%s' > '%s' (data list is not a table, but a %s)")
+						:format(methodName, prefix, name, scope, typeof(data)))
+				elseif #scope == 0 then
+					warnFunc(("%s: ignored %s > '%s' > '%s' (scope is an empty string)")
+						:format(methodName, prefix, name, scope))
+				elseif #scope > Constants.MAX_LENGTH_SCOPE then
+					warnFunc(("%s: ignored %s > '%s' > '%s' (scope exceeds %d character limit)")
+						:format(methodName, prefix, name, scope, Constants.MAX_LENGTH_SCOPE))
+				else
+					if not destination[name] then
+						destination[name] = {}
+					end
+					if not destination[name][scope] then
+						destination[name][scope] = {}
+					end
+					Utils.importPairsFromTable(
+						data,
+						destination[name][scope],
+						Interfaces[destination[name][scope]],
+						warnFunc,
+						methodName,
+						("%s > '%s' > '%s'"):format(prefix, name, scope),
+						isOrdered
+					)
+				end
+			end
+		end
+	end
+end
+
 function MockDataStoreManager:ImportFromJSON(json, verbose)
 	local content
 	if typeof(json) == "string" then
@@ -234,6 +285,7 @@ function MockDataStoreManager:ImportFromJSON(json, verbose)
 		Utils.importPairsFromTable(
 			content.GlobalDataStore,
 			Data.GlobalDataStore,
+			Interfaces[Data.GlobalDataStore],
 			warnFunc,
 			"ImportFromJSON",
 			"GlobalDataStore",

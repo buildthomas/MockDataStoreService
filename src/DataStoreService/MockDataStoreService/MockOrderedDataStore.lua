@@ -354,6 +354,7 @@ function MockOrderedDataStore:ImportFromJSON(json, verbose)
 	Utils.importPairsFromTable(
 		content,
 		self.__data,
+		Manager:GetDataInterface(self.__data),
 		(verbose == false and function() end or warn),
 		"ImportFromJSON",
 		("OrderedDataStore > %s > %s"):format(self.__name, self.__scope),
