@@ -30,6 +30,8 @@ function MockDataStorePages:AdvanceToNextPageAsync()
 		error("Call to AdvanceToNextPageAsync failed: No pages to advance to", 2)
 	end
 
+	Manager:TakeBudget(nil, Enum.DataStoreRequestType.GetSortedAsync)
+
 	self.__currentpage = self.__currentpage + 1
 	self.IsFinished = #self.__results <= self.__currentpage * self.__pagesize
 

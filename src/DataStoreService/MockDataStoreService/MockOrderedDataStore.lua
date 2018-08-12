@@ -277,6 +277,8 @@ function MockOrderedDataStore:GetSortedAsync(ascending, pagesize, minValue, maxV
 		maxValue = math.huge
 	end
 
+	Manager:TakeBudget(nil, Enum.DataStoreRequestType.GetSortedAsync)
+
 	if minValue > maxValue then
 		if Constants.YIELD_TIME_MAX > 0 then
 			wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
