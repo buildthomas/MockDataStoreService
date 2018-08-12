@@ -73,8 +73,8 @@ local function checkBudget(budget)
 	return true
 end
 
-if game:GetService("RunService"):IsServer() then
-	-- Only do budget updating on server in case required on client
+if game:GetService("RunService"):IsServer() and Constants.BUDGETING_ENABLED then
+	-- Only do budget updating on server (in case required on client)
 
 	initBudget()
 
@@ -152,6 +152,9 @@ function MockDataStoreManager:SetDataInterface(data, interface)
 end
 
 function MockDataStoreManager:StealBudget(...)
+	if not Constants.BUDGETING_ENABLED then
+		return true
+	end
 	if checkBudget({...}) then
 		stealBudget({...})
 		return true
@@ -162,13 +165,17 @@ function MockDataStoreManager:GetBudget(requestType)
 	if Budgets[requestType] then
 		return math.floor(Budgets[requestType])
 	end
-	return 0
+	return Constants.BUDGETING_ENABLED and 0 or math.huge
 end
 
 function MockDataStoreManager:TakeBudget(key, ...)
 	local budget = {...}
 	assert(typeof(key) == "string")
 	assert(#budget > 0)
+
+	if not Constants.BUDGETING_ENABLED then
+		return
+	end
 
 	if checkBudget(budget) then
 		if key then

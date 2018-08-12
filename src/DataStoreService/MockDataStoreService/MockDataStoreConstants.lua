@@ -22,6 +22,8 @@ return {
 
     WRITE_COOLDOWN = 6.0;			-- Amount of cooldown time between writes on the same key in a particular datastore
 
+    BUDGETING_ENABLED = true;       -- Whether budgets are enforced and calculated
+
     BUDGET_GETASYNC = {
         START = 60;					-- Starting budget
         RATE = 60;					-- Added budget per minute
