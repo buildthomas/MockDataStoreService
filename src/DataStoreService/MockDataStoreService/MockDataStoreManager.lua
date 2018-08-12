@@ -17,8 +17,8 @@ local ConstantsMapping = {
 	[Enum.DataStoreRequestType.GetAsync] = Constants.BUDGET_GETASYNC;
 	[Enum.DataStoreRequestType.GetSortedAsync] = Constants.BUDGET_GETSORTEDASYNC;
 	[Enum.DataStoreRequestType.OnUpdate] = Constants.BUDGET_ONUPDATE;
-	[Enum.DataStoreRequestType.SetIncrementAsync] = Constants.BUDGET_SETINCRASYNC;
-	[Enum.DataStoreRequestType.SetIncrementSortedAsync] = Constants.BUDGET_SETINCRSORTEDASYNC;
+	[Enum.DataStoreRequestType.SetIncrementAsync] = Constants.BUDGET_SETINCREMENTASYNC;
+	[Enum.DataStoreRequestType.SetIncrementSortedAsync] = Constants.BUDGET_SETINCREMENTSORTEDASYNC;
 }
 
 -- Bookkeeping of all data:
