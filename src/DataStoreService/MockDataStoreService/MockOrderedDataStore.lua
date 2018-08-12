@@ -46,6 +46,9 @@ function MockOrderedDataStore:GetAsync(key)
 		error(("bad argument #1 to 'GetAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
+	self.__getCache[key] = true
+	Manager:TakeBudget(key, Enum.DataStoreRequestType.GetAsync)
+
 	local retValue = self.__data[key]
 
 	if Constants.YIELD_TIME_MAX > 0 then
