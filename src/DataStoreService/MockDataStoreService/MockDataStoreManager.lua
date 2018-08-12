@@ -11,6 +11,14 @@ local Utils = require(script.Parent.MockDataStoreUtils)
 local Constants = require(script.Parent.MockDataStoreConstants)
 local HttpService = game:GetService("HttpService")
 
+local ConstantsMapping = {
+	[Enum.DataStoreRequestType.GetAsync] = Constants.BUDGET_GETASYNC;
+	[Enum.DataStoreRequestType.GetSortedAsync] = Constants.BUDGET_GETSORTEDASYNC;
+	[Enum.DataStoreRequestType.OnUpdate] = Constants.BUDGET_ONUPDATE;
+	[Enum.DataStoreRequestType.SetIncrementAsync] = Constants.BUDGET_SETINCRASYNC;
+	[Enum.DataStoreRequestType.SetIncrementSortedAsync] = Constants.BUDGET_SETINCRSORTEDASYNC;
+}
+
 -- Bookkeeping of all data:
 local Data = {
 	GlobalDataStore = {};
@@ -23,14 +31,6 @@ local Interfaces = {}
 
 -- Request limit bookkeeping:
 local Budgets = {}
-
-local ConstantsMapping = {
-	[Enum.DataStoreRequestType.GetAsync] = Constants.BUDGET_GETASYNC;
-	[Enum.DataStoreRequestType.GetSortedAsync] = Constants.BUDGET_GETSORTEDASYNC;
-	[Enum.DataStoreRequestType.OnUpdate] = Constants.BUDGET_ONUPDATE;
-	[Enum.DataStoreRequestType.SetIncrementAsync] = Constants.BUDGET_SETINCRASYNC;
-	[Enum.DataStoreRequestType.SetIncrementSortedAsync] = Constants.BUDGET_SETINCRSORTEDASYNC;
-}
 
 local budgetRequestQueue = {}
 
