@@ -146,6 +146,13 @@ function MockDataStoreManager:SetDataInterface(data, interface)
 	Interfaces[data] = interface
 end
 
+function MockDataStoreManager:StealBudget(...)
+	if checkBudget({...}) then
+		stealBudget({...})
+		return true
+	end
+end
+
 function MockDataStoreManager:GetBudget(requestType)
 	if Budgets[requestType] then
 		return math.floor(Budgets[requestType])
@@ -159,7 +166,11 @@ function MockDataStoreManager:TakeBudget(key, ...)
 	assert(#budget > 0)
 
 	if checkBudget(budget) then
-		warn(("Request was queued due to lack of budget. Try sending fewer requests. Key = %s"):format(key))
+		if key then
+			warn(("Request was queued due to lack of budget. Try sending fewer requests. Key = %s"):format(key))
+		else
+			warn("Request of GetSortedAsync/AdvanceToNextPageAsync was queued due to lack of budget. Try sending fewer requests.")
+		end
 		table.insert(budgetRequestQueue, 1, {
 			Thread = coroutine.running();
 			Budget = budget;

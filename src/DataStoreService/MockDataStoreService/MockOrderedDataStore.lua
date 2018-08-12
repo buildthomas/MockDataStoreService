@@ -28,7 +28,7 @@ function MockOrderedDataStore:OnUpdate(key, callback)
 	end
 
 	return self.__event.Event:Connect(function(k, v)
-		if k == key then
+		if k == key and Manager:StealBudget(Enum.DataStoreRequestType.OnUpdate) then
 			if Constants.YIELD_TIME_UPDATE_MAX > 0 then
 				wait(rand:NextNumber(Constants.YIELD_TIME_UPDATE_MIN, Constants.YIELD_TIME_UPDATE_MAX))
 			end
