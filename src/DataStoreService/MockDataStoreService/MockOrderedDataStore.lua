@@ -27,8 +27,10 @@ function MockOrderedDataStore:OnUpdate(key, callback)
 		error(("bad argument #1 to 'OnUpdate' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
+	MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.OnUpdate)
+
 	return self.__event.Event:Connect(function(k, v)
-		if k == key and MockDataStoreManager:StealBudget(Enum.DataStoreRequestType.OnUpdate) then
+		if k == key then
 			if Constants.YIELD_TIME_UPDATE_MAX > 0 then
 				wait(rand:NextNumber(Constants.YIELD_TIME_UPDATE_MIN, Constants.YIELD_TIME_UPDATE_MAX))
 			end
