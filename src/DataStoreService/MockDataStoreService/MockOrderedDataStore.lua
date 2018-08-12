@@ -257,7 +257,7 @@ function MockOrderedDataStore:GetSortedAsync(ascending, pagesize, minValue, maxV
 
 	pagesize = math.floor(pagesize + .5)
 	if pagesize <= 0 or pagesize > Constants.MAX_PAGE_SIZE then
-		error(("bad argument #2 to 'GetSortedAsync' (page size must be an integer above 0 and below %s)")
+		error(("bad argument #2 to 'GetSortedAsync' (page size must be an integer above 0 and below %d)")
 			:format(Constants.MAX_PAGE_SIZE), 2)
 	end
 

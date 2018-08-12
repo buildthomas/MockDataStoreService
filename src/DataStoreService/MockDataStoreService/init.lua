@@ -31,13 +31,13 @@ local function makeGetWrapper(methodName, getObject, isGlobal) -- Helper functio
 				error(("bad argument #1 to '%s' (name can't be empty string)")
 					:format(methodName), 2)
 			elseif #name > Constants.MAX_LENGTH_NAME then
-				error(("bad argument #1 to '%s' (name exceeds %s character limit)")
+				error(("bad argument #1 to '%s' (name exceeds %d character limit)")
 					:format(methodName, Constants.MAX_LENGTH_NAME), 2)
 			elseif scope and #scope == 0 then
 				error(("bad argument #2 to '%s' (scope can't be empty string)")
 					:format(methodName), 2)
 			elseif scope and #scope > Constants.MAX_LENGTH_SCOPE then
-				error(("bad argument #2 to '%s' (scope exceeds %s character limit)")
+				error(("bad argument #2 to '%s' (scope exceeds %d character limit)")
 					:format(methodName, Constants.MAX_LENGTH_SCOPE), 2)
 			end
 			return getObject(name, scope or "global")
