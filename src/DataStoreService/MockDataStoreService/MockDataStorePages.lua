@@ -5,15 +5,15 @@
 		https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
 ]]
 
-local DataStorePages = {}
-DataStorePages.__index = DataStorePages
+local MockDataStorePages = {}
+MockDataStorePages.__index = MockDataStorePages
 
 local Manager = require(script.Parent.MockDataStoreManager)
 local Constants = require(script.Parent.MockDataStoreConstants)
 
 local rand = Random.new()
 
-function DataStorePages:GetCurrentPage()
+function MockDataStorePages:GetCurrentPage()
 	local retValue = {}
 
 	local minimumIndex = math.max(1, (self.__currentpage - 1) * self.__pagesize + 1)
@@ -25,7 +25,7 @@ function DataStorePages:GetCurrentPage()
 	return retValue
 end
 
-function DataStorePages:AdvanceToNextPageAsync()
+function MockDataStorePages:AdvanceToNextPageAsync()
 	if self.IsFinished then
 		error("Call to AdvanceToNextPageAsync failed: No pages to advance to", 2)
 	end
@@ -38,4 +38,4 @@ function DataStorePages:AdvanceToNextPageAsync()
 	end
 end
 
-return DataStorePages
+return MockDataStorePages

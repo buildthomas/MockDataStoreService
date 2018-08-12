@@ -84,12 +84,17 @@ function MockDataStoreManager:GetBudget(requestType)
 	return Budgets[requestType] or 0
 end
 
-function MockDataStoreManager:ConsumeBudget(requestType)
-	if not Budgets[requestType] or Budgets[requestType] <= 0 then
-		return false
+function MockDataStoreManager:ConsumeBudget(...)
+	local requestTypes = {...}
+	for _, requestType in pairs(requestTypes) do
+		if not Budgets[requestType] or Budgets[requestType] <= 0 then
+			return false
+		end
 	end
-	-- TODO: uncomment when request limits are actually refreshed
-	--Budgets[requestType] = Budgets[requestType] - 1
+	for _, requestType in pairs(requestTypes) do
+		-- TODO: uncomment when request limits are actually refreshed
+		--Budgets[requestType] = Budgets[requestType] - 1
+	end
 	return true
 end
 

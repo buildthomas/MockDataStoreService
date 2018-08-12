@@ -59,7 +59,8 @@ MockDataStoreService.GetGlobalDataStore = makeGetWrapper(
         local value = {
             __data = data; -- Mapping from <key> to <value>
             __event = Instance.new("BindableEvent"); -- For OnUpdate
-            __writeCache = {};
+			__writeCache = {};
+			__getCache = {};
         }
         interface = setmetatable(value, MockGlobalDataStore)
 		MockDataStoreManager:SetDataInterface(data, interface)
@@ -84,7 +85,8 @@ MockDataStoreService.GetDataStore = makeGetWrapper(
             __scope = scope;
             __data = data; -- Mapping from <key> to <value>
             __event = Instance.new("BindableEvent"); -- For OnUpdate
-            __writeCache = {};
+			__writeCache = {};
+			__getCache = {};
         }
         interface = setmetatable(value, MockGlobalDataStore)
 		MockDataStoreManager:SetDataInterface(data, interface)
@@ -111,7 +113,8 @@ MockDataStoreService.GetOrderedDataStore = makeGetWrapper(
             __ref = {}; -- Mapping from <key> to corresponding {Key = <key>, Value = <value>} entry in __sorted
             __changed = false; -- Whether __sorted is guaranteed sorted at the moment
             __event = Instance.new("BindableEvent"); -- For OnUpdate
-            __writeCache = {};
+			__writeCache = {};
+			__getCache = {};
         }
         interface = setmetatable(value, MockOrderedDataStore)
 		MockDataStoreManager:SetDataInterface(data, interface)

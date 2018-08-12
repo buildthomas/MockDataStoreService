@@ -20,36 +20,43 @@ return {
     YIELD_TIME_UPDATE_MIN = 1.0;	-- Random yield times from events from OnUpdate
     YIELD_TIME_UPDATE_MAX = 3.0;
 
-    WRITE_COOLDOWN = 6.0;           -- Amount of cooldown time between writes on the same key in a particular datastore
+    WRITE_COOLDOWN = 6.0;			-- Amount of cooldown time between writes on the same key in a particular datastore
 
-    BUDGET_GETASYNC_START = 60;		    -- Starting budget
-    BUDGET_GETASYNC_RATE = 60;          -- Added budget per minute
-    BUDGET_GETASYNC_RATE_PLR = 10;      -- Additional added budget per minute per player
-    BUDGET_GETASYNC_MAX_FACTOR = 3;     -- The maximum budget as a factor of (rate + rate_plr * #players)
+    BUDGET_GETASYNC = {
+        START = 60;					-- Starting budget
+        RATE = 60;					-- Added budget per minute
+        RATE_PLR = 10;				-- Additional added budget per minute per player
+        MAX_FACTOR = 3;				-- The maximum budget as a factor of (rate + rate_plr * #players)
+    };
 
-    BUDGET_GETSORTEDASYNC_START = 5;
-    BUDGET_GETSORTEDASYNC_RATE = 5;
-    BUDGET_GETSORTEDASYNC_RATE_PLR = 2;
-    BUDGET_GETSORTEDASYNC_MAX_FACTOR = 3;
+    BUDGET_GETSORTEDASYNC = {
+        START = 5;
+        RATE = 5;
+        RATE_PLR = 2;
+        MAX_FACTOR = 3;
+    };
 
-    BUDGET_ONUPDATE_START = 30;
-    BUDGET_ONUPDATE_RATE = 30;
-    BUDGET_ONUPDATE_RATE_PLR = 5;
-    BUDGET_ONUPDATE_MAX_FACTOR = 1;
+    BUDGET_ONUPDATE = {
+        START = 30;
+        RATE = 30;
+        RATE_PLR = 5;
+        MAX_FACTOR = 1;
+    };
 
-    BUDGET_SETINCRASYNC_START = 60;
-    BUDGET_SETINCRASYNC_RATE = 60;
-    BUDGET_SETINCRASYNC_RATE_PLR = 10;
-    BUDGET_SETINCRASYNC_MAX_FACTOR = 3;
+    BUDGET_SETINCREMENTASYNC = {
+        START = 60;
+        RATE = 60;
+        RATE_PLR = 10;
+        MAX_FACTOR = 3;
+    };
 
-    BUDGET_SETINCRSORTEDASYNC_START = 30;
-    BUDGET_SETINCRSORTEDASYNC_RATE = 30;
-    BUDGET_SETINCRSORTEDASYNC_RATE_PLR = 5;
-    BUDGET_SETINCRSORTEDASYNC_MAX_FACTOR = 3;
+    BUDGET_SETINCREMENTSORTEDASYNC = {
+        START = 30;
+        RATE = 30;
+        RATE_PLR = 5;
+        MAX_FACTOR = 3;
+    };
 
-    BUDGET_UPDATEASYNC_START = 60;
-    BUDGET_UPDATEASYNC_RATE = 60;
-    BUDGET_UPDATEASYNC_RATE_PLR = 10;
-    BUDGET_UPDATEASYNC_MAX_FACTOR = 3;
+    BUDGET_UPDATE_INTERVAL = 5.0;	-- Time interval in seconds at which budgets are updated (do not put too low)
 
 }
