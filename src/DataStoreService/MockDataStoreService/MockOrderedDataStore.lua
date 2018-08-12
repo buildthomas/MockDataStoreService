@@ -221,6 +221,13 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 		error("bad argument #2 to 'UpdateAsync' (resulting non-integer value can't be stored in OrderedDataStore)", 2)
 	end
 
+	if self.__getCache[key] then
+		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+	else
+		self.__getCache[key] = true
+		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync, Enum.DataStoreRequestType.GetAsync)
+	end
+
 	if self.__writeCache[key] then
 		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
 			:format(Constants.WRITE_COOLDOWN, key))
