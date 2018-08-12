@@ -10,6 +10,8 @@ local MockDataStoreManager = {}
 local Utils = require(script.Parent.MockDataStoreUtils)
 local Constants = require(script.Parent.MockDataStoreConstants)
 local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players") -- for restoring budgets
+local RunService = game:GetService("RunService")
 
 local ConstantsMapping = {
 	[Enum.DataStoreRequestType.GetAsync] = Constants.BUDGET_GETASYNC;
@@ -73,7 +75,7 @@ local function checkBudget(budget)
 	return true
 end
 
-if game:GetService("RunService"):IsServer() and Constants.BUDGETING_ENABLED then
+if RunService:IsServer() and Constants.BUDGETING_ENABLED then
 	-- Only do budget updating on server (in case required on client)
 
 	initBudget()
@@ -84,7 +86,7 @@ if game:GetService("RunService"):IsServer() and Constants.BUDGETING_ENABLED then
 			local now = tick()
 			local dt = now - lastCheck
 			lastCheck = now
-			local n = #game:GetService("Players"):GetPlayers()
+			local n = #Players:GetPlayers()
 
 			for requestType, const in pairs(ConstantsMapping) do
 				updateBudget(requestType, const, dt, n)
