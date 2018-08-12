@@ -181,6 +181,8 @@ function MockDataStoreManager:TakeBudget(key, ...)
 	end
 
 	if checkBudget(budget) then
+		stealBudget(budget)
+	else
 		if key then
 			warn(("Request was queued due to lack of budget. Try sending fewer requests. Key = %s"):format(key))
 		else
@@ -195,8 +197,6 @@ function MockDataStoreManager:TakeBudget(key, ...)
 		--coroutine.yield()
 		thread.Event:Wait()
 		thread:Destroy()
-	else
-		stealBudget(budget)
 	end
 end
 
