@@ -8,7 +8,7 @@
 local MockDataStoreUtils = {}
 
 local Constants = require(script.Parent.MockDataStoreConstants)
-local HttpService = game:GetService("HttpService")
+local HttpService = game:GetService("HttpService") -- for json encode/decode
 
 local function deepcopy(t)
 	if typeof(t) == "table" then

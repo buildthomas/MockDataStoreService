@@ -11,7 +11,7 @@ MockGlobalDataStore.__index = MockGlobalDataStore
 local Manager = require(script.Parent.MockDataStoreManager)
 local Utils = require(script.Parent.MockDataStoreUtils)
 local Constants = require(script.Parent.MockDataStoreConstants)
-local HttpService = game:GetService("HttpService")
+local HttpService = game:GetService("HttpService") -- for json encode/decode
 
 local rand = Random.new()
 
