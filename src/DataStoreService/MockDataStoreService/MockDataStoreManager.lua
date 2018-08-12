@@ -174,7 +174,7 @@ function MockDataStoreManager:TakeBudget(key, ...)
 		if key then
 			warn(("Request was queued due to lack of budget. Try sending fewer requests. Key = %s"):format(key))
 		else
-			warn("Request of GetSortedAsync/AdvanceToNextPageAsync was queued due to lack of budget. Try sending fewer requests.")
+			warn("Request of GetSortedAsync/AdvanceToNextPageAsync queued due to lack of budget. Try sending fewer requests.")
 		end
 		--local thread = coroutine.running()
 		local thread = Instance.new("BindableEvent")
