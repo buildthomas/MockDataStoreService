@@ -197,6 +197,13 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 		error(("bad argument #1 to 'UpdateAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
+	if tick() - (self.__getCache[key] or 0) < Constants.GET_CACHE_COOLDOWN then
+		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+	else
+		self.__getCache[key] = tick()
+		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync, Enum.DataStoreRequestType.GetAsync)
+	end
+
 	local value = transformFunction(Utils.deepcopy(self.__data[key]))
 
 	if value == nil or type(value) == "function" or type(value) == "userdata" or type(value) == "thread" then
@@ -222,13 +229,6 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 			error(("bad argument #2 to 'UpdateAsync' (resulting data length exceeds %d character limit)")
 				:format(Constants.MAX_LENGTH_DATA), 2)
 		end
-	end
-
-	if tick() - (self.__getCache[key] or 0) < Constants.GET_CACHE_COOLDOWN then
-		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
-	else
-		self.__getCache[key] = tick()
-		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync, Enum.DataStoreRequestType.GetAsync)
 	end
 
 	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then

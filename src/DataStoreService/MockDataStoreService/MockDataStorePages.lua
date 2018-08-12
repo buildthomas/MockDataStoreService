@@ -27,7 +27,7 @@ end
 
 function MockDataStorePages:AdvanceToNextPageAsync()
 	if self.IsFinished then
-		error("Call to AdvanceToNextPageAsync failed: No pages to advance to", 2)
+		error("AdvanceToNextPageAsync rejected with error: No pages to advance to", 2)
 	end
 
 	Manager:TakeBudget(nil, Enum.DataStoreRequestType.GetSortedAsync)

@@ -206,17 +206,17 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 		error(("bad argument #1 to 'UpdateAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
-	local value = transformFunction(self.__data[key])
-
-	if type(value) ~= "number" or value%1 ~= 0 then
-		error("bad argument #2 to 'UpdateAsync' (resulting non-integer value can't be stored in OrderedDataStore)", 2)
-	end
-
 	if tick() - (self.__getCache[key] or 0) < Constants.GET_CACHE_COOLDOWN then
 		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync)
 	else
 		self.__getCache[key] = tick()
 		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync, Enum.DataStoreRequestType.GetAsync)
+	end
+
+	local value = transformFunction(self.__data[key])
+
+	if type(value) ~= "number" or value%1 ~= 0 then
+		error("bad argument #2 to 'UpdateAsync' (resulting non-integer value can't be stored in OrderedDataStore)", 2)
 	end
 
 	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
