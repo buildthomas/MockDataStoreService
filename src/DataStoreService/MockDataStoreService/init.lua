@@ -144,8 +144,8 @@ function MockDataStoreService:ImportFromJSON(...)
 	return MockDataStoreManager:ImportFromJSON(...)
 end
 
-function MockDataStoreService:ExportFromJSON(...)
-	return MockDataStoreManager:ExportFromJSON(...)
+function MockDataStoreService:ExportToJSON(...)
+	return MockDataStoreManager:ExportToJSON(...)
 end
 
 return MockDataStoreService
