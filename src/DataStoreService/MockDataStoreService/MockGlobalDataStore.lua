@@ -173,6 +173,8 @@ function MockGlobalDataStore:SetAsync(key, value)
 		end
 	end
 
+	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+
 	if self.__writeCache[key] then
 		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
 			:format(Constants.WRITE_COOLDOWN, key))
