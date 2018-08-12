@@ -78,13 +78,15 @@ print(DataStoreService:ExportToJSON())
 
 ```
 
+There is also a small helper module provided at the top-level ("DataStoreService") that automatically detects and selects which datastores should be used (real datastores for published games with API access, mock datastores for offline games / published games without API access).
+
+It is recommended to use this code with the structure provided in the repository, and to simply call `require(path.to.DataStoreService)` instead of `game:GetService("DataStoreService")` in your code.
+
 Review the API of datastores here:
 - http://wiki.roblox.com/index.php?title=API:Class/DataStoreService
 - http://wiki.roblox.com/index.php?title=API:Class/GlobalDataStore
 - http://wiki.roblox.com/index.php?title=API:Class/OrderedDataStore
 - http://wiki.roblox.com/index.php?title=API:Class/DataStorePages
-
-There is also a small helper module provided ("DataStoreService") that automatically detects and selects which datastores should be used (real datastores for published games with API access, mock datastores for offline games / published games without API access).
 
 -----
 
@@ -95,8 +97,5 @@ There is also a small helper module provided ("DataStoreService") that automatic
 - Emulates the yielding of datastore requests (waits a random amount of time before returning from the call).
 - Extra API for json-exporting/importing contents of one/all datastores for easy testing.
 - All operations safely deep-copy values where necessary (not possible to alter values in the datastore by externally altering tables, etc).
-
-**Not yet implemented:** (pull requests welcome!)
-- Currently, datastore budgets are never reduced when requests are made, and requests will never error or cache because of an exceeded request limit.
-- Does not enforce the "6 seconds between writes on the same key" rule yet.
-- Does not respect diabolical mode in Studio (i.e. randomly fail requests for the purpose of testing) since the setting for this mode cannot be read. Custom diabolical mode for this module in the future maybe?
+- Enforces the "6 seconds between writes on the same key" rule.
+- Enforces datastore budgets correctly and requests will error if the budget is exceeded.
