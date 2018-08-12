@@ -84,7 +84,7 @@ if RunService:IsServer() and Constants.BUDGETING_ENABLED then
 		local lastCheck = tick()
 		while wait(Constants.BUDGET_UPDATE_INTERVAL) do
 			local now = tick()
-			local dt = now - lastCheck
+			local dt = (now - lastCheck) / 60
 			lastCheck = now
 			local n = #Players:GetPlayers()
 
