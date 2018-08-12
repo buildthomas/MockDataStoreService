@@ -22,19 +22,85 @@ local Data = {
 local Interfaces = {}
 
 -- Request limit bookkeeping:
-local Budgets = {
-	[Enum.DataStoreRequestType.GetAsync] = Constants.GETASYNC;
-	[Enum.DataStoreRequestType.GetSortedAsync] = Constants.GETSORTEDASYNC;
-	[Enum.DataStoreRequestType.OnUpdate] = Constants.ONUPDATE;
-	[Enum.DataStoreRequestType.SetIncrementAsync] = Constants.SETINCRASYNC;
-	[Enum.DataStoreRequestType.SetIncrementSortedAsync] = Constants.SETINCRSORTEDASYNC;
-	[Enum.DataStoreRequestType.UpdateAsync] = Constants.UPDATEASYNC;
+local Budgets = {}
+
+local ConstantsMapping = {
+	[Enum.DataStoreRequestType.GetAsync] = Constants.BUDGET_GETASYNC;
+	[Enum.DataStoreRequestType.GetSortedAsync] = Constants.BUDGET_GETSORTEDASYNC;
+	[Enum.DataStoreRequestType.OnUpdate] = Constants.BUDGET_ONUPDATE;
+	[Enum.DataStoreRequestType.SetIncrementAsync] = Constants.BUDGET_SETINCRASYNC;
+	[Enum.DataStoreRequestType.SetIncrementSortedAsync] = Constants.BUDGET_SETINCRSORTEDASYNC;
 }
 
+local budgetRequestQueue = {}
+
+local function initBudget()
+	for requestType, const in pairs(ConstantsMapping) do
+		Budgets[requestType] = const.START
+	end
+	Budgets[Enum.DataStoreRequestType.UpdateAsync] = math.min(
+		Budgets[Enum.DataStoreRequestType.GetAsync],
+		Budgets[Enum.DataStoreRequestType.SetIncrementAsync]
+	)
+end
+
+initBudget()
+
+local function updateBudget(req, const, dt, n)
+	local rate = const.RATE + n * const.RATE_PLR
+	Budgets[req] = math.min(
+		Budgets[req] + dt * rate,
+		const.MAX_FACTOR * rate
+	)
+end
+
+local function stealBudget(budget)
+	for _, requestType in pairs(budget) do
+		if Budgets[requestType] then
+			Budgets[requestType] = math.max(0, Budgets[requestType] - 1)
+		end
+	end
+	Budgets[Enum.DataStoreRequestType.UpdateAsync] = math.min(
+		Budgets[Enum.DataStoreRequestType.GetAsync],
+		Budgets[Enum.DataStoreRequestType.SetIncrementAsync]
+	)
+end
+
+local function checkBudget(budget)
+	for _, requestType in pairs(budget) do
+		if Budgets[requestType] and Budgets[requestType] < 1 then
+			return false
+		end
+	end
+	return true
+end
+
 delay(0, function() -- Thread that restores budgets periodically
+	local lastCheck = tick()
+	while wait(Constants.BUDGET_UPDATE_INTERVAL) do
+		local now = tick()
+		local dt = now - lastCheck
+		lastCheck = now
+		local n = #game:GetService("Players"):GetPlayers()
 
-	-- TODO: investigate how Roblox restores budgets and implement
+		for requestType, const in pairs(ConstantsMapping) do
+			updateBudget(requestType, const, dt, n)
+		end
+		Budgets[Enum.DataStoreRequestType.UpdateAsync] = math.min(
+			Budgets[Enum.DataStoreRequestType.GetAsync],
+			Budgets[Enum.DataStoreRequestType.SetIncrementAsync]
+		)
 
+		for i = #budgetRequestQueue, 1, -1 do
+			local thread = budgetRequestQueue[i].Thread
+			local budget = budgetRequestQueue[i].Budget
+			if checkBudget(budget) then
+				table.remove(budgetRequestQueue, i)
+				stealBudget(budget)
+				coroutine.resume(thread)
+			end
+		end
+	end
 end)
 
 function MockDataStoreManager:GetGlobalData()
@@ -81,21 +147,27 @@ function MockDataStoreManager:SetDataInterface(data, interface)
 end
 
 function MockDataStoreManager:GetBudget(requestType)
-	return Budgets[requestType] or 0
+	if Budgets[requestType] then
+		return math.floor(Budgets[requestType])
+	end
+	return 0
 end
 
-function MockDataStoreManager:ConsumeBudget(...)
-	local requestTypes = {...}
-	for _, requestType in pairs(requestTypes) do
-		if not Budgets[requestType] or Budgets[requestType] <= 0 then
-			return false
-		end
+function MockDataStoreManager:TakeBudget(key, ...)
+	local budget = {...}
+	assert(typeof(key) == "string")
+	assert(#budget > 0)
+
+	if checkBudget(budget) then
+		warn(("Request was queued due to lack of budget. Try sending fewer requests. Key = %s"):format(key))
+		table.insert(budgetRequestQueue, 1, {
+			Thread = coroutine.running();
+			Budget = budget;
+		})
+		coroutine.yield()
+	else
+		stealBudget(budget)
 	end
-	for _, requestType in pairs(requestTypes) do
-		-- TODO: uncomment when request limits are actually refreshed
-		--Budgets[requestType] = Budgets[requestType] - 1
-	end
-	return true
 end
 
 function MockDataStoreManager:ExportToJSON()
