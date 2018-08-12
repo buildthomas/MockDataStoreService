@@ -97,7 +97,8 @@ delay(0, function() -- Thread that restores budgets periodically
 			if checkBudget(budget) then
 				table.remove(budgetRequestQueue, i)
 				stealBudget(budget)
-				coroutine.resume(thread)
+				--coroutine.resume(thread)
+				thread:Fire()
 			end
 		end
 	end
@@ -171,11 +172,15 @@ function MockDataStoreManager:TakeBudget(key, ...)
 		else
 			warn("Request of GetSortedAsync/AdvanceToNextPageAsync was queued due to lack of budget. Try sending fewer requests.")
 		end
+		--local thread = coroutine.running()
+		local thread = Instance.new("BindableEvent")
 		table.insert(budgetRequestQueue, 1, {
-			Thread = coroutine.running();
+			Thread = thread;
 			Budget = budget;
 		})
-		coroutine.yield()
+		--coroutine.yield()
+		thread.Event:Wait()
+		thread:Destroy()
 	else
 		stealBudget(budget)
 	end
