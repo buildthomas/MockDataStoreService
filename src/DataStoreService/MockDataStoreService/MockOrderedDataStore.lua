@@ -70,7 +70,7 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 			:format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
-	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync)
 
 	local old = self.__data[key]
 
@@ -121,7 +121,7 @@ function MockOrderedDataStore:RemoveAsync(key)
 		error(("bad argument #1 to 'RemoveAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
-	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync)
 
 	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
 		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
@@ -164,7 +164,7 @@ function MockOrderedDataStore:SetAsync(key, value)
 		error("bad argument #2 to 'SetAsync' (cannot store non-integer values in OrderedDataStore)", 2)
 	end
 
-	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync)
 
 	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
 		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
@@ -213,10 +213,10 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 	end
 
 	if self.__getCache[key] then
-		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync)
 	else
 		self.__getCache[key] = true
-		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync, Enum.DataStoreRequestType.GetAsync)
+		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync, Enum.DataStoreRequestType.GetAsync)
 	end
 
 	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
