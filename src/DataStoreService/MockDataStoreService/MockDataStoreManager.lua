@@ -44,8 +44,6 @@ local function initBudget()
 	)
 end
 
-initBudget()
-
 local function updateBudget(req, const, dt, n)
 	local rate = const.RATE + n * const.RATE_PLR
 	Budgets[req] = math.min(
@@ -75,34 +73,40 @@ local function checkBudget(budget)
 	return true
 end
 
-delay(0, function() -- Thread that restores budgets periodically
-	local lastCheck = tick()
-	while wait(Constants.BUDGET_UPDATE_INTERVAL) do
-		local now = tick()
-		local dt = now - lastCheck
-		lastCheck = now
-		local n = #game:GetService("Players"):GetPlayers()
+if game:GetService("RunService"):IsServer() then
+	-- Only do budget updating on server in case required on client
 
-		for requestType, const in pairs(ConstantsMapping) do
-			updateBudget(requestType, const, dt, n)
-		end
-		Budgets[Enum.DataStoreRequestType.UpdateAsync] = math.min(
-			Budgets[Enum.DataStoreRequestType.GetAsync],
-			Budgets[Enum.DataStoreRequestType.SetIncrementAsync]
-		)
+	initBudget()
 
-		for i = #budgetRequestQueue, 1, -1 do
-			local thread = budgetRequestQueue[i].Thread
-			local budget = budgetRequestQueue[i].Budget
-			if checkBudget(budget) then
-				table.remove(budgetRequestQueue, i)
-				stealBudget(budget)
-				--coroutine.resume(thread)
-				thread:Fire()
+	delay(0, function() -- Thread that restores budgets periodically
+		local lastCheck = tick()
+		while wait(Constants.BUDGET_UPDATE_INTERVAL) do
+			local now = tick()
+			local dt = now - lastCheck
+			lastCheck = now
+			local n = #game:GetService("Players"):GetPlayers()
+
+			for requestType, const in pairs(ConstantsMapping) do
+				updateBudget(requestType, const, dt, n)
+			end
+			Budgets[Enum.DataStoreRequestType.UpdateAsync] = math.min(
+				Budgets[Enum.DataStoreRequestType.GetAsync],
+				Budgets[Enum.DataStoreRequestType.SetIncrementAsync]
+			)
+
+			for i = #budgetRequestQueue, 1, -1 do
+				local thread = budgetRequestQueue[i].Thread
+				local budget = budgetRequestQueue[i].Budget
+				if checkBudget(budget) then
+					table.remove(budgetRequestQueue, i)
+					stealBudget(budget)
+					--coroutine.resume(thread)
+					thread:Fire()
+				end
 			end
 		end
-	end
-end)
+	end)
+end
 
 function MockDataStoreManager:GetGlobalData()
 	return Data.GlobalDataStore
