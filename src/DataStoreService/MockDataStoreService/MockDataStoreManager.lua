@@ -173,7 +173,7 @@ end
 
 function MockDataStoreManager:TakeBudget(key, ...)
 	local budget = {...}
-	assert(typeof(key) == "string")
+	assert(key == nil or typeof(key) == "string")
 	assert(#budget > 0)
 
 	if not Constants.BUDGETING_ENABLED then
