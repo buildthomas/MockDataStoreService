@@ -161,6 +161,7 @@ function MockDataStoreManager:StealBudget(...)
 		stealBudget({...})
 		return true
 	end
+	return false
 end
 
 function MockDataStoreManager:GetBudget(requestType)
