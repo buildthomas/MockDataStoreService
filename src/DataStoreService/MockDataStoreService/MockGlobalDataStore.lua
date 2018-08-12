@@ -69,6 +69,8 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 			:format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
+	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+
 	local old = self.__data[key]
 
 	if old ~= nil and (typeof(old) ~= "number" or old%1 ~= 0) then
