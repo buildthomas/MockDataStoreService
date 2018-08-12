@@ -282,7 +282,7 @@ function MockDataStoreManager:ImportFromJSON(json, verbose)
 	end
 
 	if typeof(content.GlobalDataStore) == "table" then
-		Utils.importPairsFromTable(
+		importDataStoresFromTable(
 			content.GlobalDataStore,
 			Data.GlobalDataStore,
 			Interfaces[Data.GlobalDataStore],
@@ -293,7 +293,7 @@ function MockDataStoreManager:ImportFromJSON(json, verbose)
 		)
 	end
 	if typeof(content.DataStore) == "table" then
-		Utils.importDataStoresFromTable(
+		importDataStoresFromTable(
 			content.DataStore,
 			Data.DataStore,
 			warnFunc,
@@ -303,7 +303,7 @@ function MockDataStoreManager:ImportFromJSON(json, verbose)
 		)
 	end
 	if typeof(content.OrderedDataStore) == "table" then
-		Utils.importDataStoresFromTable(
+		importDataStoresFromTable(
 			content.OrderedDataStore,
 			Data.OrderedDataStore,
 			warnFunc,
