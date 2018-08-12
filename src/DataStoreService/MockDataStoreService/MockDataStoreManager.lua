@@ -11,7 +11,7 @@ local Utils = require(script.Parent.MockDataStoreUtils)
 local Constants = require(script.Parent.MockDataStoreConstants)
 local HttpService = game:GetService("HttpService") -- for json encode/decode
 local Players = game:GetService("Players") -- for restoring budgets
-local RunService = game:GetService("RunService")
+local RunService = game:GetService("RunService") -- for checking if running context is on server
 
 local ConstantsMapping = {
 	[Enum.DataStoreRequestType.GetAsync] = Constants.BUDGET_GETASYNC;
