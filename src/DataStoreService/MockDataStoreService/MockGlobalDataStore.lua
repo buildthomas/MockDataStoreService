@@ -116,6 +116,8 @@ function MockGlobalDataStore:RemoveAsync(key)
 		error(("bad argument #1 to 'RemoveAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
+	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+
 	if self.__writeCache[key] then
 		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
 			:format(Constants.WRITE_COOLDOWN, key))
