@@ -8,7 +8,7 @@
 local MockGlobalDataStore = {}
 MockGlobalDataStore.__index = MockGlobalDataStore
 
-local Manager = require(script.Parent.MockDataStoreManager)
+local MockDataStoreManager = require(script.Parent.MockDataStoreManager)
 local Utils = require(script.Parent.MockDataStoreUtils)
 local Constants = require(script.Parent.MockDataStoreConstants)
 local HttpService = game:GetService("HttpService") -- for json encode/decode
@@ -27,7 +27,7 @@ function MockGlobalDataStore:OnUpdate(key, callback)
 	end
 
 	return self.__event.Event:Connect(function(k, v)
-		if k == key and Manager:StealBudget(Enum.DataStoreRequestType.OnUpdate) then
+		if k == key and MockDataStoreManager:StealBudget(Enum.DataStoreRequestType.OnUpdate) then
 			if Constants.YIELD_TIME_UPDATE_MAX > 0 then
 				wait(rand:NextNumber(Constants.YIELD_TIME_UPDATE_MIN, Constants.YIELD_TIME_UPDATE_MAX))
 			end
@@ -46,7 +46,7 @@ function MockGlobalDataStore:GetAsync(key)
 	end
 
 	self.__getCache[key] = tick()
-	Manager:TakeBudget(key, Enum.DataStoreRequestType.GetAsync)
+	MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.GetAsync)
 
 	local retValue = Utils.deepcopy(self.__data[key])
 
@@ -69,7 +69,7 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 			:format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
-	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+	MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
 
 	local old = self.__data[key]
 
@@ -113,7 +113,7 @@ function MockGlobalDataStore:RemoveAsync(key)
 		error(("bad argument #1 to 'RemoveAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
-	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+	MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
 
 	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
 		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
@@ -167,7 +167,7 @@ function MockGlobalDataStore:SetAsync(key, value)
 		end
 	end
 
-	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+	MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
 
 	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
 		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
@@ -198,10 +198,10 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 	end
 
 	if tick() - (self.__getCache[key] or 0) < Constants.GET_CACHE_COOLDOWN then
-		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+		MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
 	else
 		self.__getCache[key] = tick()
-		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync, Enum.DataStoreRequestType.GetAsync)
+		MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync, Enum.DataStoreRequestType.GetAsync)
 	end
 
 	local value = transformFunction(Utils.deepcopy(self.__data[key]))
@@ -277,7 +277,7 @@ function MockGlobalDataStore:ImportFromJSON(json, verbose)
 	Utils.importPairsFromTable(
 		content,
 		self.__data,
-		Manager:GetDataInterface(self.__data),
+		MockDataStoreManager:GetDataInterface(self.__data),
 		(verbose == false and function() end or warn),
 		"ImportFromJSON",
 		((typeof(self.__name) == "string" and typeof(self.__scope) == "string")

@@ -8,7 +8,7 @@
 local MockOrderedDataStore = {}
 MockOrderedDataStore.__index = MockOrderedDataStore
 
-local Manager = require(script.Parent.MockDataStoreManager)
+local MockDataStoreManager = require(script.Parent.MockDataStoreManager)
 local MockDataStorePages = require(script.Parent.MockDataStorePages)
 local Utils = require(script.Parent.MockDataStoreUtils)
 local Constants = require(script.Parent.MockDataStoreConstants)
@@ -28,7 +28,7 @@ function MockOrderedDataStore:OnUpdate(key, callback)
 	end
 
 	return self.__event.Event:Connect(function(k, v)
-		if k == key and Manager:StealBudget(Enum.DataStoreRequestType.OnUpdate) then
+		if k == key and MockDataStoreManager:StealBudget(Enum.DataStoreRequestType.OnUpdate) then
 			if Constants.YIELD_TIME_UPDATE_MAX > 0 then
 				wait(rand:NextNumber(Constants.YIELD_TIME_UPDATE_MIN, Constants.YIELD_TIME_UPDATE_MAX))
 			end
@@ -47,7 +47,7 @@ function MockOrderedDataStore:GetAsync(key)
 	end
 
 	self.__getCache[key] = tick()
-	Manager:TakeBudget(key, Enum.DataStoreRequestType.GetAsync)
+	MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.GetAsync)
 
 	local retValue = self.__data[key]
 
@@ -70,7 +70,7 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 			:format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
-	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync)
+	MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync)
 
 	local old = self.__data[key]
 
@@ -121,7 +121,7 @@ function MockOrderedDataStore:RemoveAsync(key)
 		error(("bad argument #1 to 'RemoveAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
-	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync)
+	MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync)
 
 	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
 		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
@@ -164,7 +164,7 @@ function MockOrderedDataStore:SetAsync(key, value)
 		error("bad argument #2 to 'SetAsync' (cannot store non-integer values in OrderedDataStore)", 2)
 	end
 
-	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync)
+	MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync)
 
 	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
 		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
@@ -207,10 +207,11 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 	end
 
 	if tick() - (self.__getCache[key] or 0) < Constants.GET_CACHE_COOLDOWN then
-		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync)
+		MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync)
 	else
 		self.__getCache[key] = tick()
-		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync, Enum.DataStoreRequestType.GetAsync)
+		MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync,
+			Enum.DataStoreRequestType.GetAsync)
 	end
 
 	local value = transformFunction(self.__data[key])
@@ -281,7 +282,7 @@ function MockOrderedDataStore:GetSortedAsync(ascending, pagesize, minValue, maxV
 		maxValue = math.huge
 	end
 
-	Manager:TakeBudget(nil, Enum.DataStoreRequestType.GetSortedAsync)
+	MockDataStoreManager:TakeBudget(nil, Enum.DataStoreRequestType.GetSortedAsync)
 
 	if minValue > maxValue then
 		if Constants.YIELD_TIME_MAX > 0 then
@@ -354,7 +355,7 @@ function MockOrderedDataStore:ImportFromJSON(json, verbose)
 	Utils.importPairsFromTable(
 		content,
 		self.__data,
-		Manager:GetDataInterface(self.__data),
+		MockDataStoreManager:GetDataInterface(self.__data),
 		(verbose == false and function() end or warn),
 		"ImportFromJSON",
 		("OrderedDataStore > %s > %s"):format(self.__name, self.__scope),

@@ -8,7 +8,7 @@
 local MockDataStorePages = {}
 MockDataStorePages.__index = MockDataStorePages
 
-local Manager = require(script.Parent.MockDataStoreManager)
+local MockDataStoreManager = require(script.Parent.MockDataStoreManager)
 local Constants = require(script.Parent.MockDataStoreConstants)
 
 local rand = Random.new()
@@ -30,7 +30,7 @@ function MockDataStorePages:AdvanceToNextPageAsync()
 		error("AdvanceToNextPageAsync rejected with error: No pages to advance to", 2)
 	end
 
-	Manager:TakeBudget(nil, Enum.DataStoreRequestType.GetSortedAsync)
+	MockDataStoreManager:TakeBudget(nil, Enum.DataStoreRequestType.GetSortedAsync)
 
 	self.__currentpage = self.__currentpage + 1
 	self.IsFinished = #self.__results <= self.__currentpage * self.__pagesize
