@@ -81,7 +81,7 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 		error("IncrementAsync rejected with error: cannot increment non-integer value", 2)
 	end
 
-	if self.__writeCache[key] then
+	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
 		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
 			:format(Constants.WRITE_COOLDOWN, key))
 	end
@@ -101,10 +101,7 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 		self.__event:Fire(key, self.__data[key])
 	end
 
-	self.__writeCache[key] = true
-	delay(Constants.WRITE_COOLDOWN, function()
-		self.__writeCache[key] = nil
-	end)
+	self.__writeCache[key] = tick()
 
 	local retValue = self.__data[key]
 
@@ -126,7 +123,7 @@ function MockOrderedDataStore:RemoveAsync(key)
 
 	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
 
-	if self.__writeCache[key] then
+	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
 		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
 			:format(Constants.WRITE_COOLDOWN, key))
 	end
@@ -145,10 +142,7 @@ function MockOrderedDataStore:RemoveAsync(key)
 		self.__event:Fire(key, nil)
 	end
 
-	self.__writeCache[key] = true
-	delay(Constants.WRITE_COOLDOWN, function()
-		self.__writeCache[key] = nil
-	end)
+	self.__writeCache[key] = tick()
 
 	if Constants.YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
@@ -172,7 +166,7 @@ function MockOrderedDataStore:SetAsync(key, value)
 
 	Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
 
-	if self.__writeCache[key] then
+	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
 		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
 			:format(Constants.WRITE_COOLDOWN, key))
 	end
@@ -192,10 +186,7 @@ function MockOrderedDataStore:SetAsync(key, value)
 		self.__event:Fire(key, self.__data[key])
 	end
 
-	self.__writeCache[key] = true
-	delay(Constants.WRITE_COOLDOWN, function()
-		self.__writeCache[key] = nil
-	end)
+	self.__writeCache[key] = tick()
 
 	if Constants.YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
@@ -228,7 +219,7 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync, Enum.DataStoreRequestType.GetAsync)
 	end
 
-	if self.__writeCache[key] then
+	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
 		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
 			:format(Constants.WRITE_COOLDOWN, key))
 	end
@@ -248,10 +239,7 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 		self.__event:Fire(key, self.__data[key])
 	end
 
-	self.__writeCache[key] = true
-	delay(Constants.WRITE_COOLDOWN, function()
-		self.__writeCache[key] = nil
-	end)
+	self.__writeCache[key] = tick()
 
 	if Constants.YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
