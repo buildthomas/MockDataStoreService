@@ -22,13 +22,16 @@ return {
 
     WRITE_COOLDOWN = 6.0;			-- Amount of cooldown time between writes on the same key in a particular datastore
 
+    --TODO: DETERMINE CORRECT VALUE:
+    GET_CACHE_COOLDOWN = 30.0;		-- Amount of cooldown time that a recent get of a key is considered fresh
+
     BUDGETING_ENABLED = true;       -- Whether budgets are enforced and calculated
 
-    BUDGET_GETASYNC = {
-        START = 60;					-- Starting budget
-        RATE = 60;					-- Added budget per minute
-        RATE_PLR = 10;				-- Additional added budget per minute per player
-        MAX_FACTOR = 3;				-- The maximum budget as a factor of (rate + rate_plr * #players)
+    BUDGET_GETASYNC = {             -- Budget constant storing structure
+        START = 60;				    	-- Starting budget
+        RATE = 60;				    	-- Added budget per minute
+        RATE_PLR = 10;			    	-- Additional added budget per minute per player
+        MAX_FACTOR = 3;			    	-- The maximum budget as a factor of (rate + rate_plr * #players)
     };
 
     BUDGET_GETSORTEDASYNC = {

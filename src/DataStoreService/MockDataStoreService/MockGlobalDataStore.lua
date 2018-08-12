@@ -45,7 +45,7 @@ function MockGlobalDataStore:GetAsync(key)
 		error(("bad argument #1 to 'GetAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
-	self.__getCache[key] = true
+	self.__getCache[key] = tick()
 	Manager:TakeBudget(key, Enum.DataStoreRequestType.GetAsync)
 
 	local retValue = Utils.deepcopy(self.__data[key])
@@ -224,10 +224,10 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 		end
 	end
 
-	if self.__getCache[key] then
+	if tick() - (self.__getCache[key] or 0) < Constants.GET_CACHE_COOLDOWN then
 		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
 	else
-		self.__getCache[key] = true
+		self.__getCache[key] = tick()
 		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync, Enum.DataStoreRequestType.GetAsync)
 	end
 

@@ -46,7 +46,7 @@ function MockOrderedDataStore:GetAsync(key)
 		error(("bad argument #1 to 'GetAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
-	self.__getCache[key] = true
+	self.__getCache[key] = tick()
 	Manager:TakeBudget(key, Enum.DataStoreRequestType.GetAsync)
 
 	local retValue = self.__data[key]
@@ -212,10 +212,10 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 		error("bad argument #2 to 'UpdateAsync' (resulting non-integer value can't be stored in OrderedDataStore)", 2)
 	end
 
-	if self.__getCache[key] then
+	if tick() - (self.__getCache[key] or 0) < Constants.GET_CACHE_COOLDOWN then
 		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync)
 	else
-		self.__getCache[key] = true
+		self.__getCache[key] = tick()
 		Manager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementSortedAsync, Enum.DataStoreRequestType.GetAsync)
 	end
 
