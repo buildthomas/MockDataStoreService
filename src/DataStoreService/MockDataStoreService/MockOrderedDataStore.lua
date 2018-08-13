@@ -344,7 +344,7 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 		error("UpdateAsync rejected with error (resulting non-integer value can't be stored in OrderedDataStore)", 2)
 	end
 
-	self.__writeLock[key] = 
+	self.__writeLock[key] = true
 
 	local old = self.__data[key]
 
