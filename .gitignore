@@ -40,3 +40,5 @@ luac.out
 *.hex
 
 .vs/slnx.sqlite
+.vscode/settings.json
+rojo.json

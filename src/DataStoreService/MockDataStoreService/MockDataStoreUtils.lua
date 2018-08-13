@@ -7,9 +7,8 @@
 
 local MockDataStoreUtils = {}
 
-local MockDataStoreManager = require(script.Parent.MockDataStoreManager)
 local Constants = require(script.Parent.MockDataStoreConstants)
-local HttpService = game:GetService("HttpService")
+local HttpService = game:GetService("HttpService") -- for json encode/decode
 
 local function deepcopy(t)
 	if typeof(t) == "table" then
@@ -61,7 +60,7 @@ local function scanValidity(tbl, passed, path) -- Credit to Corecii (edited)
 			last = key
 		end
 		if type(value) == "userdata" or type(value) == "function" or type(value) == "thread" then
-			return false, path, "cannot store values of type " .. typeof(value)
+			return false, path, "cannot store value '" .. tostring(value) .. "' of type " .. typeof(value)
 		end
 		if type(value) == "table" then
 			if passed[value] then
@@ -83,7 +82,7 @@ local function getStringPath(path)
 end
 
 -- Import into a single datastore:
-local function importPairsFromTable(origin, destination, warnFunc, methodName, prefix, isOrdered)
+local function importPairsFromTable(origin, destination, interface, warnFunc, methodName, prefix, isOrdered)
 	for key, value in pairs(origin) do
 		if typeof(key) ~= "string" then
 			warnFunc(("%s: ignored %s > '%s' (key is not a string, but a %s)")
@@ -98,14 +97,14 @@ local function importPairsFromTable(origin, destination, warnFunc, methodName, p
 			warnFunc(("%s: ignored %s > '%s' (length of encoded value exceeds %d character limit)")
 				:format(methodName, prefix, key, Constants.MAX_LENGTH_DATA))
 		elseif type(value) == "function" or type(value) == "userdata" or type(value) == "thread" then
-			warnFunc(("%s: ignored %s > '%s' (cannot store values of type %s)")
-				:format(methodName, prefix, key, type(value)))
+			warnFunc(("%s: ignored %s > '%s' (cannot store value '%s' of type %s)")
+				:format(methodName, prefix, key, tostring(value), type(value)))
 		elseif isOrdered and type(value) ~= "number" then
-			warnFunc(("%s: ignored %s > '%s' (cannot store values of type %s in OrderedDataStore)")
-				:format(methodName, prefix, key, type(value)))
+			warnFunc(("%s: ignored %s > '%s' (cannot store value '%s' of type %s in OrderedDataStore)")
+				:format(methodName, prefix, key, tostring(value), type(value)))
 		elseif isOrdered and value%1 ~= 0 then
-			warnFunc(("%s: ignored %s > '%s' (cannot store non-integer values in OrderedDataStore)")
-				:format(methodName, prefix, key, type(value)))
+			warnFunc(("%s: ignored %s > '%s' (cannot store non-integer value '%s' in OrderedDataStore)")
+				:format(methodName, prefix, key, tostring(value)))
 		else
 			local isValid = true
 			local keyPath, reason
@@ -118,7 +117,6 @@ local function importPairsFromTable(origin, destination, warnFunc, methodName, p
 			if isValid then
 				local old = destination[key]
 				destination[key] = value
-				local interface = MockDataStoreManager:GetDataInterface(destination)
 				if interface and old ~= value then -- hacky block to fire OnUpdate signals
 					if isOrdered and interface then -- hacky block to populate internal structures for OrderedDataStores
 						if interface.__ref[key] then
@@ -135,56 +133,6 @@ local function importPairsFromTable(origin, destination, warnFunc, methodName, p
 			else
 				warnFunc(("%s: ignored %s > '%s' (table has invalid entry at <%s>: %s)")
 					:format(methodName, prefix, key, getStringPath(keyPath), reason))
-			end
-		end
-	end
-end
-
--- Import into an entire datastore type:
-local function importDataStoresFromTable(origin, destination, warnFunc, methodName, prefix, isOrdered)
-	for name, scopes in pairs(origin) do
-		if typeof(name) ~= "string" then
-			warnFunc(("%s: ignored %s > '%s' (name is not a string, but a %s)")
-				:format(methodName, prefix, tostring(name), typeof(name)))
-		elseif typeof(scopes) ~= "table" then
-			warnFunc(("%s: ignored %s > '%s' (scope list is not a table, but a %s)")
-				:format(methodName, prefix, name, typeof(scopes)))
-		elseif #name == 0 then
-			warnFunc(("%s: ignored %s > '%s' (name is an empty string)")
-				:format(methodName, prefix, name))
-		elseif #name > Constants.MAX_LENGTH_NAME then
-			warnFunc(("%s: ignored %s > '%s' (name exceeds %d character limit)")
-				:format(methodName, prefix, name, Constants.MAX_LENGTH_NAME))
-		else
-			for scope, data in pairs(scopes) do
-				if typeof(scope) ~= "string" then
-					warnFunc(("%s: ignored %s > '%s' > '%s' (scope is not a string, but a %s)")
-						:format(methodName, prefix, name, tostring(scope), typeof(scope)))
-				elseif typeof(data) ~= "table" then
-					warnFunc(("%s: ignored %s > '%s' > '%s' (data list is not a table, but a %s)")
-						:format(methodName, prefix, name, scope, typeof(data)))
-				elseif #scope == 0 then
-					warnFunc(("%s: ignored %s > '%s' > '%s' (scope is an empty string)")
-						:format(methodName, prefix, name, scope))
-				elseif #scope > Constants.MAX_LENGTH_SCOPE then
-					warnFunc(("%s: ignored %s > '%s' > '%s' (scope exceeds %d character limit)")
-						:format(methodName, prefix, name, scope, Constants.MAX_LENGTH_SCOPE))
-				else
-					if not destination[name] then
-						destination[name] = {}
-					end
-					if not destination[name][scope] then
-						destination[name][scope] = {}
-					end
-					importPairsFromTable(
-						data,
-						destination[name][scope],
-						warnFunc,
-						methodName,
-						("%s > '%s' > '%s'"):format(prefix, name, scope),
-						isOrdered
-					)
-				end
 			end
 		end
 	end
@@ -220,7 +168,6 @@ MockDataStoreUtils.deepcopy = deepcopy
 MockDataStoreUtils.scanValidity = scanValidity
 MockDataStoreUtils.getStringPath = getStringPath
 MockDataStoreUtils.importPairsFromTable = importPairsFromTable
-MockDataStoreUtils.importDataStoresFromTable = importDataStoresFromTable
 MockDataStoreUtils.prepareDataStoresForExport = prepareDataStoresForExport
 
 return MockDataStoreUtils
