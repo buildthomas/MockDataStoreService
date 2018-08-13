@@ -319,10 +319,10 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 		self.__writeLock[key] = true
 		local budget
 		if tick() - (self.__getCache[key] or 0) < Constants.GET_COOLDOWN then
+			budget = {Enum.DataStoreRequestType.SetIncrementSortedAsync}
+		else
 			self.__getCache[key] = tick()
 			budget = {Enum.DataStoreRequestType.GetAsync, Enum.DataStoreRequestType.SetIncrementSortedAsync}
-		else
-			budget = {Enum.DataStoreRequestType.SetIncrementSortedAsync}
 		end
 		success = MockDataStoreManager:YieldForBudget(
 			function()
@@ -344,7 +344,7 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 		error("UpdateAsync rejected with error (resulting non-integer value can't be stored in OrderedDataStore)", 2)
 	end
 
-	self.__writeLock[key] = true
+	self.__writeLock[key] = 
 
 	local old = self.__data[key]
 

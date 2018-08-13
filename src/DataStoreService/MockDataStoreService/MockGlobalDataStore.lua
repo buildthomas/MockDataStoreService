@@ -311,10 +311,10 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 		self.__writeLock[key] = true
 		local budget
 		if tick() - (self.__getCache[key] or 0) < Constants.GET_COOLDOWN then
+			budget = {Enum.DataStoreRequestType.SetIncrementAsync}
+		else
 			self.__getCache[key] = tick()
 			budget = {Enum.DataStoreRequestType.GetAsync, Enum.DataStoreRequestType.SetIncrementAsync}
-		else
-			budget = {Enum.DataStoreRequestType.SetIncrementAsync}
 		end
 		success = MockDataStoreManager:YieldForBudget(
 			function()
