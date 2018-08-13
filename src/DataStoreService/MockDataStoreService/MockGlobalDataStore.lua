@@ -112,6 +112,7 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 			end,
 			{Enum.DataStoreRequestType.SetIncrementAsync}
 		)
+		self.__writeLock[key] = nil
 	end
 
 	if not success then
@@ -126,6 +127,8 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 		end
 		error("IncrementAsync rejected with error (cannot increment non-integer value)", 2)
 	end
+
+	self.__writeLock[key] = true
 
 	delta = delta and math.floor(delta + .5) or 1
 
@@ -178,11 +181,14 @@ function MockGlobalDataStore:RemoveAsync(key)
 			end,
 			{Enum.DataStoreRequestType.SetIncrementAsync}
 		)
+		self.__writeLock[key] = nil
 	end
 
 	if not success then
 		error("RemoveAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
+
+	self.__writeLock[key] = true
 
 	local value = Utils.deepcopy(self.__data[key])
 	self.__data[key] = nil
@@ -255,11 +261,14 @@ function MockGlobalDataStore:SetAsync(key, value)
 			end,
 			{Enum.DataStoreRequestType.SetIncrementAsync}
 		)
+		self.__writeLock[key] = nil
 	end
 
 	if not success then
 		error("SetAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
+
+	self.__writeLock[key] = true
 
 	if typeof(value) == "table" or value ~= self.__data[key] then
 		self.__data[key] = Utils.deepcopy(value)
@@ -314,6 +323,7 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 			end,
 			budget
 		)
+		self.__writeLock[key] = nil
 	end
 
 	if not success then
@@ -346,6 +356,8 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 				:format(Constants.MAX_LENGTH_DATA), 2)
 		end
 	end
+
+	self.__writeLock[key] = true
 
 	if typeof(value) == "table" or value ~= self.__data[key] then
 		self.__data[key] = Utils.deepcopy(value)

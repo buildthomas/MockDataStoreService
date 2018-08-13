@@ -113,6 +113,7 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 			end,
 			{Enum.DataStoreRequestType.SetIncrementSortedAsync}
 		)
+		self.__writeLock[key] = nil
 	end
 
 	if not success then
@@ -127,6 +128,8 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 		end
 		error("IncrementAsync rejected with error (cannot increment non-integer value)", 2)
 	end
+
+	self.__writeLock[key] = true
 
 	delta = delta and math.floor(delta + .5) or 1
 
@@ -186,11 +189,14 @@ function MockOrderedDataStore:RemoveAsync(key)
 			end,
 			{Enum.DataStoreRequestType.SetIncrementSortedAsync}
 		)
+		self.__writeLock[key] = nil
 	end
 
 	if not success then
 		error("RemoveAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
+
+	self.__writeLock[key] = true
 
 	local value = self.__data[key]
 
@@ -251,11 +257,14 @@ function MockOrderedDataStore:SetAsync(key, value)
 			end,
 			{Enum.DataStoreRequestType.SetIncrementSortedAsync}
 		)
+		self.__writeLock[key] = nil
 	end
 
 	if not success then
 		error("SetAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
+
+	self.__writeLock[key] = true
 
 	local old = self.__data[key]
 
@@ -322,6 +331,7 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 			end,
 			budget
 		)
+		self.__writeLock[key] = nil
 	end
 
 	if not success then
@@ -333,6 +343,8 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 	if typeof(value) ~= "number" or value%1 ~= 0 then
 		error("UpdateAsync rejected with error (resulting non-integer value can't be stored in OrderedDataStore)", 2)
 	end
+
+	self.__writeLock[key] = true
 
 	local old = self.__data[key]
 
