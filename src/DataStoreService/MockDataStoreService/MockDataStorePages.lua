@@ -16,8 +16,8 @@ local rand = Random.new()
 function MockDataStorePages:GetCurrentPage()
 	local retValue = {}
 
-	local minimumIndex = math.max(1, (self.__currentpage - 1) * self.__pagesize + 1)
-	local maximumIndex = math.min(self.__currentpage * self.__pagesize, #self.__results)
+	local minimumIndex = math.max(1, (self.__currentPage - 1) * self.__pageSize + 1)
+	local maximumIndex = math.min(self.__currentPage * self.__pageSize, #self.__results)
 	for i = minimumIndex, maximumIndex do
 		table.insert(retValue, self.__results[i]) -- No need to deepcopy, results only contains numbers
 	end
@@ -45,10 +45,10 @@ function MockDataStorePages:AdvanceToNextPageAsync()
 		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 	end
 
-	if #self.__results <= self.__currentpage * self.__pagesize then
-		self.__currentpage = self.__currentpage + 1
+	if #self.__results <= self.__currentPage * self.__pageSize then
+		self.__currentPage = self.__currentPage + 1
 	end
-	self.IsFinished = #self.__results <= self.__currentpage * self.__pagesize
+	self.IsFinished = #self.__results <= self.__currentPage * self.__pageSize
 end
 
 return MockDataStorePages
