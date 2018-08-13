@@ -43,6 +43,9 @@ local budgetRequestQueues = {
 }
 
 local function initBudget()
+	if not Constants.BUDGETING_ENABLED then
+		return
+	end
 	for requestType, const in pairs(ConstantsMapping) do
 		Budgets[requestType] = const.START
 	end
@@ -53,6 +56,9 @@ local function initBudget()
 end
 
 local function updateBudget(req, const, dt, n)
+	if not Constants.BUDGETING_ENABLED then
+		return
+	end
 	local rate = const.RATE + n * const.RATE_PLR
 	Budgets[req] = math.min(
 		Budgets[req] + dt * rate,
@@ -87,8 +93,8 @@ local function checkBudget(budget)
 	return true
 end
 
-if RunService:IsServer() and Constants.BUDGETING_ENABLED then
-	-- Only do budget updating on server (in case required on client)
+if RunService:IsServer() then
+	-- Only do budget updating on server (in case package required on client)
 
 	initBudget()
 
@@ -104,18 +110,20 @@ if RunService:IsServer() and Constants.BUDGETING_ENABLED then
 				updateBudget(requestType, const, dt, n)
 			end
 			Budgets[Enum.DataStoreRequestType.UpdateAsync] = math.min(
-				Budgets[Enum.DataStoreRequestType.GetAsync],
+				Budgets[Enum.DataStoreRequestType.GetAsync] or math.huge,
 				Budgets[Enum.DataStoreRequestType.SetIncrementAsync]
 			)
 
 			for _, budgetRequestQueue in pairs(budgetRequestQueues) do
 				for i = #budgetRequestQueue, 1, -1 do
 					local request = budgetRequestQueue[i]
+
 					local thread = request.Thread
 					local budget = request.Budget
 					local key = request.Key
 					local lock = request.Lock
 					local cache = request.Cache
+
 					if not (lock and (lock[key] or tick() - (cache[key] or 0) < Constants.WRITE_COOLDOWN)) and checkBudget(budget) then
 						table.remove(budgetRequestQueue, i)
 						stealBudget(budget)
