@@ -26,7 +26,16 @@ function MockGlobalDataStore:OnUpdate(key, callback)
 		error(("bad argument #1 to 'OnUpdate' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
-	MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.OnUpdate)
+	local success = MockDataStoreManager:YieldForBudget(
+		function()
+			warn(("OnUpdate request was throttled due to lack of budget. Try sending fewer requests. Key = %s"):format(key))
+		end,
+		{Enum.DataStoreRequestType.OnUpdate}
+	)
+
+	if not success then
+		error("OnUpdate rejected with error: request was throttled, but throttled queue was full.", 2)
+	end
 
 	return self.__event.Event:Connect(function(k, v)
 		if k == key then
@@ -47,8 +56,18 @@ function MockGlobalDataStore:GetAsync(key)
 		error(("bad argument #1 to 'GetAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
+	local success = MockDataStoreManager:YieldForBudget(
+		function()
+			warn(("GetAsync request was throttled due to lack of budget. Try sending fewer requests. Key = %s"):format(key))
+		end,
+		{Enum.DataStoreRequestType.GetAsync}
+	)
+
+	if not success then
+		error("GetAsync rejected with error: request was throttled, but throttled queue was full.", 2)
+	end
+
 	self.__getCache[key] = tick()
-	MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.GetAsync)
 
 	local retValue = Utils.deepcopy(self.__data[key])
 
@@ -71,7 +90,34 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 			:format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
-	MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+	local success
+
+	if self.__writeLock[key] or tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
+		success = MockDataStoreManager:YieldForWriteLockAndBudget(
+			function()
+				warn(("IncrementAsync request was throttled, a key can only be written to once every %d seconds. Key = %s")
+					:format(Constants.WRITE_COOLDOWN, key))
+			end,
+			key,
+			self.__writeLock,
+			self.__writeCache,
+			{Enum.DataStoreRequestType.SetIncrementAsync}
+		)
+	else
+		self.__writeLock[key] = true
+		success = MockDataStoreManager:YieldForBudget(
+			function()
+				warn(("IncrementAsync request was throttled due to lack of budget. Try sending fewer requests. Key = %s")
+					:format(key))
+			end,
+			{Enum.DataStoreRequestType.SetIncrementAsync}
+		)
+		self.__writeLock[key] = nil
+	end
+
+	if not success then
+		error("IncrementAsync rejected with error: request was throttled, but throttled queue was full.", 2)
+	end
 
 	local old = self.__data[key]
 
@@ -79,12 +125,7 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 		if Constants.YIELD_TIME_MAX > 0 then
 			wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 		end
-		error("IncrementAsync rejected with error: cannot increment non-integer value", 2)
-	end
-
-	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
-		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
-			:format(Constants.WRITE_COOLDOWN, key))
+		error("IncrementAsync rejected with error: cannot increment non-integer value.", 2)
 	end
 
 	delta = delta and math.floor(delta + .5) or 1
@@ -115,11 +156,33 @@ function MockGlobalDataStore:RemoveAsync(key)
 		error(("bad argument #1 to 'RemoveAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
-	MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+	local success
 
-	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
-		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
-			:format(Constants.WRITE_COOLDOWN, key))
+	if self.__writeLock[key] or tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
+		success = MockDataStoreManager:YieldForWriteLockAndBudget(
+			function()
+				warn(("RemoveAsync request was throttled, a key can only be written to once every %d seconds. Key = %s")
+					:format(Constants.WRITE_COOLDOWN, key))
+			end,
+			key,
+			self.__writeLock,
+			self.__writeCache,
+			{Enum.DataStoreRequestType.SetIncrementAsync}
+		)
+	else
+		self.__writeLock[key] = true
+		success = MockDataStoreManager:YieldForBudget(
+			function()
+				warn(("RemoveAsync request was throttled due to lack of budget. Try sending fewer requests. Key = %s")
+					:format(key))
+			end,
+			{Enum.DataStoreRequestType.SetIncrementAsync}
+		)
+		self.__writeLock[key] = nil
+	end
+
+	if not success then
+		error("RemoveAsync rejected with error: request was throttled, but throttled queue was full.", 2)
 	end
 
 	local value = Utils.deepcopy(self.__data[key])
@@ -169,11 +232,33 @@ function MockGlobalDataStore:SetAsync(key, value)
 		end
 	end
 
-	MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+	local success
 
-	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
-		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
-			:format(Constants.WRITE_COOLDOWN, key))
+	if self.__writeLock[key] or tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
+		success = MockDataStoreManager:YieldForWriteLockAndBudget(
+			function()
+				warn(("SetAsync request was throttled, a key can only be written to once every %d seconds. Key = %s")
+					:format(Constants.WRITE_COOLDOWN, key))
+			end,
+			key,
+			self.__writeLock,
+			self.__writeCache,
+			{Enum.DataStoreRequestType.SetIncrementAsync}
+		)
+	else
+		self.__writeLock[key] = true
+		success = MockDataStoreManager:YieldForBudget(
+			function()
+				warn(("SetAsync request was throttled due to lack of budget. Try sending fewer requests. Key = %s")
+					:format(key))
+			end,
+			{Enum.DataStoreRequestType.SetIncrementAsync}
+		)
+		self.__writeLock[key] = nil
+	end
+
+	if not success then
+		error("SetAsync rejected with error: request was throttled, but throttled queue was full.", 2)
 	end
 
 	if typeof(value) == "table" or value ~= self.__data[key] then
@@ -199,11 +284,40 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 		error(("bad argument #1 to 'UpdateAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
-	if tick() - (self.__getCache[key] or 0) < Constants.GET_CACHE_COOLDOWN then
-		MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync)
+	local success
+
+	if self.__writeLock[key] or tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
+		success = MockDataStoreManager:YieldForWriteLockAndBudget(
+			function()
+				warn(("UpdateAsync request was throttled, a key can only be written to once every %d seconds. Key = %s")
+					:format(Constants.WRITE_COOLDOWN, key))
+			end,
+			key,
+			self.__writeLock,
+			self.__writeCache,
+			{Enum.DataStoreRequestType.SetIncrementAsync}
+		)
 	else
-		self.__getCache[key] = tick()
-		MockDataStoreManager:TakeBudget(key, Enum.DataStoreRequestType.SetIncrementAsync, Enum.DataStoreRequestType.GetAsync)
+		self.__writeLock[key] = true
+		local budget
+		if tick() - (self.__getCache[key] or 0) < Constants.GET_CACHE_COOLDOWN then
+			self.__getCache[key] = tick()
+			budget = {Enum.DataStoreRequestType.GetAsync, Enum.DataStoreRequestType.SetIncrementAsync}
+		else
+			budget = {Enum.DataStoreRequestType.SetIncrementAsync}
+		end
+		success = MockDataStoreManager:YieldForBudget(
+			function()
+				warn(("UpdateAsync request was throttled due to lack of budget. Try sending fewer requests. Key = %s")
+					:format(key))
+			end,
+			budget
+		)
+		self.__writeLock[key] = nil
+	end
+
+	if not success then
+		error("UpdateAsync rejected with error: request was throttled, but throttled queue was full.", 2)
 	end
 
 	local value = transformFunction(Utils.deepcopy(self.__data[key]))
@@ -231,11 +345,6 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 			error(("bad argument #2 to 'UpdateAsync' (resulting data length exceeds %d character limit)")
 				:format(Constants.MAX_LENGTH_DATA), 2)
 		end
-	end
-
-	if tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
-		return warn(("Request was throttled, a key can only be written to once every %d seconds. Key = %s")
-			:format(Constants.WRITE_COOLDOWN, key))
 	end
 
 	if typeof(value) == "table" or value ~= self.__data[key] then

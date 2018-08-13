@@ -34,7 +34,13 @@ local Interfaces = {}
 -- Request limit bookkeeping:
 local Budgets = {}
 
-local budgetRequestQueue = {}
+local budgetRequestQueues = {
+	[Enum.DataStoreRequestType.GetAsync] = {};
+	[Enum.DataStoreRequestType.GetSortedAsync] = {};
+	[Enum.DataStoreRequestType.OnUpdate] = {};
+	[Enum.DataStoreRequestType.SetIncrementAsync] = {};
+	[Enum.DataStoreRequestType.SetIncrementSortedAsync] = {};
+}
 
 local function initBudget()
 	for requestType, const in pairs(ConstantsMapping) do
@@ -55,6 +61,9 @@ local function updateBudget(req, const, dt, n)
 end
 
 local function stealBudget(budget)
+	if not Constants.BUDGETING_ENABLED then
+		return
+	end
 	for _, requestType in pairs(budget) do
 		if Budgets[requestType] then
 			Budgets[requestType] = math.max(0, Budgets[requestType] - 1)
@@ -67,6 +76,9 @@ local function stealBudget(budget)
 end
 
 local function checkBudget(budget)
+	if not Constants.BUDGETING_ENABLED then
+		return true
+	end
 	for _, requestType in pairs(budget) do
 		if Budgets[requestType] and Budgets[requestType] < 1 then
 			return false
@@ -96,14 +108,20 @@ if RunService:IsServer() and Constants.BUDGETING_ENABLED then
 				Budgets[Enum.DataStoreRequestType.SetIncrementAsync]
 			)
 
-			for i = #budgetRequestQueue, 1, -1 do
-				local thread = budgetRequestQueue[i].Thread
-				local budget = budgetRequestQueue[i].Budget
-				if checkBudget(budget) then
-					table.remove(budgetRequestQueue, i)
-					stealBudget(budget)
-					--coroutine.resume(thread)
-					thread:Fire()
+			for _, budgetRequestQueue in pairs(budgetRequestQueues) do
+				for i = #budgetRequestQueue, 1, -1 do
+					local request = budgetRequestQueue[i]
+					local thread = request.Thread
+					local budget = request.Budget
+					local key = request.Key
+					local lock = request.Lock
+					local cache = request.Cache
+					if not (lock and (lock[key] or tick() - (cache[key] or 0) < Constants.WRITE_COOLDOWN)) and checkBudget(budget) then
+						table.remove(budgetRequestQueue, i)
+						stealBudget(budget)
+						--coroutine.resume(thread)
+						thread:Fire()
+					end
 				end
 			end
 		end
@@ -153,17 +171,6 @@ function MockDataStoreManager:SetDataInterface(data, interface)
 	Interfaces[data] = interface
 end
 
-function MockDataStoreManager:StealBudget(...)
-	if not Constants.BUDGETING_ENABLED then
-		return true
-	end
-	if checkBudget({...}) then
-		stealBudget({...})
-		return true
-	end
-	return false
-end
-
 function MockDataStoreManager:GetBudget(requestType)
 	if Budgets[requestType] then
 		return math.floor(Budgets[requestType])
@@ -171,26 +178,54 @@ function MockDataStoreManager:GetBudget(requestType)
 	return Constants.BUDGETING_ENABLED and 0 or math.huge
 end
 
-function MockDataStoreManager:TakeBudget(key, ...)
-	local budget = {...}
-	assert(key == nil or typeof(key) == "string")
+function MockDataStoreManager:YieldForWriteLockAndBudget(callback, key, writeLock, writeCache, budget)
+	assert(typeof(callback) == "function")
+	assert(typeof(key) == "string")
+	assert(typeof(writeLock) == "table")
+	assert(typeof(writeCache) == "table")
 	assert(#budget > 0)
 
-	if not Constants.BUDGETING_ENABLED then
-		return
+	local mainRequestType = budget[1]
+
+	if #budgetRequestQueues[mainRequestType] >= Constants.THROTTLE_QUEUE_SIZE then
+		return false -- no room in throttle queue
 	end
+
+	callback() -- would i.e. trigger a warning in output
+
+	--local thread = coroutine.running()
+	local thread = Instance.new("BindableEvent")
+	table.insert(budgetRequestQueues[mainRequestType], 1, {
+		Key = key;
+		Lock = writeLock;
+		Cache = writeCache;
+		Thread = thread;
+		Budget = budget;
+	})
+	--coroutine.yield()
+	thread.Event:Wait()
+	thread:Destroy()
+
+	return true
+end
+
+function MockDataStoreManager:YieldForBudget(callback, budget)
+	assert(typeof(callback) == "function")
+	assert(#budget > 0)
+
+	local mainRequestType = budget[1]
 
 	if checkBudget(budget) then
 		stealBudget(budget)
+	elseif #budgetRequestQueues[mainRequestType] >= Constants.THROTTLE_QUEUE_SIZE then
+		return false -- no room in throttle queue
 	else
-		if key then
-			warn(("Request was queued due to lack of budget. Try sending fewer requests. Key = %s"):format(key))
-		else
-			warn("Request of GetSortedAsync/AdvanceToNextPageAsync queued due to lack of budget. Try sending fewer requests.")
-		end
+		callback() -- would i.e. trigger a warning in output
+
 		--local thread = coroutine.running()
 		local thread = Instance.new("BindableEvent")
-		table.insert(budgetRequestQueue, 1, {
+		table.insert(budgetRequestQueues[mainRequestType], 1, {
+			After = 0; -- no write lock
 			Thread = thread;
 			Budget = budget;
 		})
@@ -198,6 +233,8 @@ function MockDataStoreManager:TakeBudget(key, ...)
 		thread.Event:Wait()
 		thread:Destroy()
 	end
+
+	return true
 end
 
 function MockDataStoreManager:ExportToJSON()

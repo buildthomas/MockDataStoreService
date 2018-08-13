@@ -25,17 +25,19 @@ return {
     --TODO: DETERMINE CORRECT VALUE:
     GET_CACHE_COOLDOWN = 60.0;		-- Amount of cooldown time that a recent get of a key is considered fresh
 
+    THROTTLE_QUEUE_SIZE = 30;       -- Amount of requests that can be throttled at once (additional requests will error)
+
     BUDGETING_ENABLED = true;       -- Whether budgets are enforced and calculated
 
     BUDGET_GETASYNC = {             -- Budget constant storing structure
-        START = 60;				    	-- Starting budget
+        START = 100;			    	-- Starting budget
         RATE = 60;				    	-- Added budget per minute
         RATE_PLR = 10;			    	-- Additional added budget per minute per player
         MAX_FACTOR = 3;			    	-- The maximum budget as a factor of (rate + rate_plr * #players)
     };
 
     BUDGET_GETSORTEDASYNC = {
-        START = 5;
+        START = 10;
         RATE = 5;
         RATE_PLR = 2;
         MAX_FACTOR = 3;
@@ -49,14 +51,14 @@ return {
     };
 
     BUDGET_SETINCREMENTASYNC = {
-        START = 60;
+        START = 100;
         RATE = 60;
         RATE_PLR = 10;
         MAX_FACTOR = 3;
     };
 
     BUDGET_SETINCREMENTSORTEDASYNC = {
-        START = 30;
+        START = 50;
         RATE = 30;
         RATE_PLR = 5;
         MAX_FACTOR = 3;

@@ -27,10 +27,19 @@ end
 
 function MockDataStorePages:AdvanceToNextPageAsync()
 	if self.IsFinished then
-		error("AdvanceToNextPageAsync rejected with error: No pages to advance to", 2)
+		error("AdvanceToNextPageAsync rejected with error: No pages to advance to.", 2)
 	end
 
-	MockDataStoreManager:TakeBudget(nil, Enum.DataStoreRequestType.GetSortedAsync)
+	local success = MockDataStoreManager:YieldForBudget(
+		function()
+			warn("AdvanceToNextPageAsync request was throttled due to lack of budget. Try sending fewer requests.")
+		end,
+		{Enum.DataStoreRequestType.GetAsync}
+	)
+
+	if not success then
+		error("AdvanceToNextPageAsync rejected with error: request was throttled, but throttled queue was full.", 2)
+	end
 
 	self.__currentpage = self.__currentpage + 1
 	self.IsFinished = #self.__results <= self.__currentpage * self.__pagesize
