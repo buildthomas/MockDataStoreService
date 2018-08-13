@@ -66,7 +66,7 @@ return {
 
     BUDGET_UPDATE_INTERVAL = 1.0;	-- Time interval in seconds at which budgets are updated (do not put too low)
 
-    -- TODO: currently unused:
+    -- TODO: currently unused, is this even useful?
     BUDGET_STUDIO_MAX_FACTOR = 100;	-- This overrides MAX_FACTOR if datastores are accessed through plugins/command bar
 
 }
