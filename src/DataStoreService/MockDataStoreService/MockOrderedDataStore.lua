@@ -359,15 +359,15 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 	return value
 end
 
-function MockOrderedDataStore:GetSortedAsync(ascending, pagesize, minValue, maxValue)
+function MockOrderedDataStore:GetSortedAsync(ascending, pageSize, minValue, maxValue)
 	if typeof(ascending) ~= "boolean" then
 		error(("bad argument #1 to 'GetSortedAsync' (boolean expected, got %s)"):format(typeof(ascending)), 2)
-	elseif typeof(pagesize) ~= "number" then
-		error(("bad argument #2 to 'GetSortedAsync' (number expected, got %s)"):format(typeof(pagesize)), 2)
+	elseif typeof(pageSize) ~= "number" then
+		error(("bad argument #2 to 'GetSortedAsync' (number expected, got %s)"):format(typeof(pageSize)), 2)
 	end
 
-	pagesize = math.floor(pagesize + .5)
-	if pagesize <= 0 or pagesize > Constants.MAX_PAGE_SIZE then
+	pageSize = math.floor(pageSize + .5)
+	if pageSize <= 0 or pageSize > Constants.MAX_PAGE_SIZE then
 		error(("bad argument #2 to 'GetSortedAsync' (page size must be an integer above 0 and below or equal to %d)")
 			:format(Constants.MAX_PAGE_SIZE), 2)
 	end
@@ -442,10 +442,10 @@ function MockOrderedDataStore:GetSortedAsync(ascending, pagesize, minValue, maxV
 	end
 
 	return setmetatable({
-		__currentpage = 1;
-		__pagesize = pagesize;
+		__currentPage = 1;
+		__pageSize = pageSize;
 		__results = results;
-		IsFinished = (#results <= pagesize);
+		IsFinished = (#results <= pageSize);
 	}, MockDataStorePages)
 end
 
