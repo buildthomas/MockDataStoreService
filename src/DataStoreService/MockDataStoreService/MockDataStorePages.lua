@@ -41,12 +41,12 @@ function MockDataStorePages:AdvanceToNextPageAsync()
 		error("AdvanceToNextPageAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
-	self.__currentpage = self.__currentpage + 1
-	self.IsFinished = #self.__results <= self.__currentpage * self.__pagesize
-
 	if Constants.YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 	end
+
+	self.__currentpage = self.__currentpage + 1
+	self.IsFinished = #self.__results <= self.__currentpage * self.__pagesize
 end
 
 return MockDataStorePages

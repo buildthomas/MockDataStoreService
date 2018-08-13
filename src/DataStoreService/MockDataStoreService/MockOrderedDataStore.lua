@@ -113,7 +113,6 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 			end,
 			{Enum.DataStoreRequestType.SetIncrementSortedAsync}
 		)
-		self.__writeLock[key] = nil
 	end
 
 	if not success then
@@ -144,13 +143,14 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 		self.__event:Fire(key, self.__data[key])
 	end
 
-	self.__writeCache[key] = tick()
-
 	local retValue = self.__data[key]
 
 	if Constants.YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 	end
+
+	self.__writeLock[key] = nil
+	self.__writeCache[key] = tick()
 
 	return retValue
 end
@@ -186,7 +186,6 @@ function MockOrderedDataStore:RemoveAsync(key)
 			end,
 			{Enum.DataStoreRequestType.SetIncrementSortedAsync}
 		)
-		self.__writeLock[key] = nil
 	end
 
 	if not success then
@@ -207,11 +206,12 @@ function MockOrderedDataStore:RemoveAsync(key)
 		self.__event:Fire(key, nil)
 	end
 
-	self.__writeCache[key] = tick()
-
 	if Constants.YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 	end
+
+	self.__writeLock[key] = nil
+	self.__writeCache[key] = tick()
 
 	return value
 end
@@ -251,7 +251,6 @@ function MockOrderedDataStore:SetAsync(key, value)
 			end,
 			{Enum.DataStoreRequestType.SetIncrementSortedAsync}
 		)
-		self.__writeLock[key] = nil
 	end
 
 	if not success then
@@ -273,11 +272,12 @@ function MockOrderedDataStore:SetAsync(key, value)
 		self.__event:Fire(key, self.__data[key])
 	end
 
-	self.__writeCache[key] = tick()
-
 	if Constants.YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 	end
+
+	self.__writeLock[key] = nil
+	self.__writeCache[key] = tick()
 
 	return value
 end
@@ -322,7 +322,6 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 			end,
 			budget
 		)
-		self.__writeLock[key] = nil
 	end
 
 	if not success then
@@ -350,11 +349,12 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 		self.__event:Fire(key, self.__data[key])
 	end
 
-	self.__writeCache[key] = tick()
-
 	if Constants.YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 	end
+
+	self.__writeLock[key] = nil
+	self.__writeCache[key] = tick()
 
 	return value
 end

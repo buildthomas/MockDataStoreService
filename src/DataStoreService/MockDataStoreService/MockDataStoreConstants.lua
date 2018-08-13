@@ -15,10 +15,10 @@ return {
     MAX_PAGE_SIZE = 100;			-- Max page size for GetSortedAsync
 
     YIELD_TIME_MIN = 0.2;			-- Random yield time values for set/get/update/remove/getsorted
-    YIELD_TIME_MAX = 1.0;
+    YIELD_TIME_MAX = 0.5;
 
     YIELD_TIME_UPDATE_MIN = 0.2;	-- Random yield times from events from OnUpdate
-    YIELD_TIME_UPDATE_MAX = 1.0;
+    YIELD_TIME_UPDATE_MAX = 0.5;
 
     WRITE_COOLDOWN = 6.0;			-- Amount of cooldown time between writes on the same key in a particular datastore
 

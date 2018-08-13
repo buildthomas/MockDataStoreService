@@ -112,7 +112,6 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 			end,
 			{Enum.DataStoreRequestType.SetIncrementAsync}
 		)
-		self.__writeLock[key] = nil
 	end
 
 	if not success then
@@ -132,8 +131,6 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 
 	self.__data[key] = (old or 0) + delta
 
-	self.__writeCache[key] = tick()
-
 	if old == nil or delta ~= 0 then
 		self.__event:Fire(key, self.__data[key])
 	end
@@ -143,6 +140,9 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 	if Constants.YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 	end
+
+	self.__writeLock[key] = nil
+	self.__writeCache[key] = tick()
 
 	return retValue
 end
@@ -178,7 +178,6 @@ function MockGlobalDataStore:RemoveAsync(key)
 			end,
 			{Enum.DataStoreRequestType.SetIncrementAsync}
 		)
-		self.__writeLock[key] = nil
 	end
 
 	if not success then
@@ -188,8 +187,6 @@ function MockGlobalDataStore:RemoveAsync(key)
 	local value = Utils.deepcopy(self.__data[key])
 	self.__data[key] = nil
 
-	self.__writeCache[key] = tick()
-
 	if value ~= nil then
 		self.__event:Fire(key, nil)
 	end
@@ -197,6 +194,9 @@ function MockGlobalDataStore:RemoveAsync(key)
 	if Constants.YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 	end
+
+	self.__writeLock[key] = nil
+	self.__writeCache[key] = tick()
 
 	return value
 end
@@ -255,7 +255,6 @@ function MockGlobalDataStore:SetAsync(key, value)
 			end,
 			{Enum.DataStoreRequestType.SetIncrementAsync}
 		)
-		self.__writeLock[key] = nil
 	end
 
 	if not success then
@@ -267,11 +266,12 @@ function MockGlobalDataStore:SetAsync(key, value)
 		self.__event:Fire(key, self.__data[key])
 	end
 
-	self.__writeCache[key] = tick()
-
 	if Constants.YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 	end
+
+	self.__writeLock[key] = nil
+	self.__writeCache[key] = tick()
 end
 
 function MockGlobalDataStore:UpdateAsync(key, transformFunction)
@@ -314,7 +314,6 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 			end,
 			budget
 		)
-		self.__writeLock[key] = nil
 	end
 
 	if not success then
@@ -355,11 +354,12 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 
 	local retValue = Utils.deepcopy(value)
 
-	self.__writeCache[key] = tick()
-
 	if Constants.YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 	end
+
+	self.__writeLock[key] = nil
+	self.__writeCache[key] = tick()
 
 	return retValue
 end
