@@ -309,7 +309,7 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 	else
 		self.__writeLock[key] = true
 		local budget
-		if tick() - (self.__getCache[key] or 0) < Constants.GET_CACHE_COOLDOWN then
+		if tick() - (self.__getCache[key] or 0) < Constants.GET_COOLDOWN then
 			self.__getCache[key] = tick()
 			budget = {Enum.DataStoreRequestType.GetAsync, Enum.DataStoreRequestType.SetIncrementSortedAsync}
 		else

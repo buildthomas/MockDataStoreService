@@ -14,16 +14,16 @@ return {
 
     MAX_PAGE_SIZE = 100;			-- Max page size for GetSortedAsync
 
-    YIELD_TIME_MIN = 0.4;			-- Random yield time values for set/get/update/remove/getsorted
+    YIELD_TIME_MIN = 0.2;			-- Random yield time values for set/get/update/remove/getsorted
     YIELD_TIME_MAX = 1.0;
 
-    YIELD_TIME_UPDATE_MIN = 1.0;	-- Random yield times from events from OnUpdate
-    YIELD_TIME_UPDATE_MAX = 3.0;
+    YIELD_TIME_UPDATE_MIN = 0.2;	-- Random yield times from events from OnUpdate
+    YIELD_TIME_UPDATE_MAX = 1.0;
 
     WRITE_COOLDOWN = 6.0;			-- Amount of cooldown time between writes on the same key in a particular datastore
 
     --TODO: DETERMINE CORRECT VALUE:
-    GET_CACHE_COOLDOWN = 60.0;		-- Amount of cooldown time that a recent get of a key is considered fresh
+    GET_COOLDOWN = 60.0;		    -- Amount of cooldown time that a recent get of a key is considered fresh
 
     THROTTLE_QUEUE_SIZE = 30;       -- Amount of requests that can be throttled at once (additional requests will error)
 
@@ -65,5 +65,8 @@ return {
     };
 
     BUDGET_UPDATE_INTERVAL = 1.0;	-- Time interval in seconds at which budgets are updated (do not put too low)
+
+    -- TODO: currently unused:
+    BUDGET_STUDIO_MAX_FACTOR = 100; -- This overrides MAX_FACTOR if datastores are accessed through plugins/command bar
 
 }
