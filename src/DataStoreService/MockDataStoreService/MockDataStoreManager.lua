@@ -43,9 +43,6 @@ local budgetRequestQueues = {
 }
 
 local function initBudget()
-	if not Constants.BUDGETING_ENABLED then
-		return
-	end
 	for requestType, const in pairs(ConstantsMapping) do
 		Budgets[requestType] = const.START
 	end
@@ -94,11 +91,11 @@ local function checkBudget(budget)
 end
 
 if RunService:IsServer() then
-	-- Only do budget updating on server (in case package required on client)
+	-- Only do budget/throttle updating on server (in case package required on client)
 
 	initBudget()
 
-	delay(0, function() -- Thread that restores budgets periodically
+	delay(0, function() -- Thread that increases budgets and de-throttles requests periodically
 		local lastCheck = tick()
 		while wait(Constants.BUDGET_UPDATE_INTERVAL) do
 			local now = tick()
@@ -110,7 +107,7 @@ if RunService:IsServer() then
 				updateBudget(requestType, const, dt, n)
 			end
 			Budgets[Enum.DataStoreRequestType.UpdateAsync] = math.min(
-				Budgets[Enum.DataStoreRequestType.GetAsync] or math.huge,
+				Budgets[Enum.DataStoreRequestType.GetAsync],
 				Budgets[Enum.DataStoreRequestType.SetIncrementAsync]
 			)
 
@@ -180,10 +177,11 @@ function MockDataStoreManager:SetDataInterface(data, interface)
 end
 
 function MockDataStoreManager:GetBudget(requestType)
-	if Budgets[requestType] then
-		return math.floor(Budgets[requestType])
+	if Constants.BUDGETING_ENABLED then
+		return math.floor(Budgets[requestType] or 0)
+	else
+		return math.huge
 	end
-	return Constants.BUDGETING_ENABLED and 0 or math.huge
 end
 
 function MockDataStoreManager:YieldForWriteLockAndBudget(callback, key, writeLock, writeCache, budget)
