@@ -331,7 +331,7 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 
 	local value = transformFunction(self.__data[key])
 
-	if type(value) ~= "number" or value%1 ~= 0 then
+	if typeof(value) ~= "number" or value%1 ~= 0 then
 		error("UpdateAsync rejected with error (resulting non-integer value can't be stored in OrderedDataStore)", 2)
 	end
 
