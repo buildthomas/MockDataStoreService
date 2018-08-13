@@ -22,14 +22,14 @@ return {
 
     WRITE_COOLDOWN = 6.0;			-- Amount of cooldown time between writes on the same key in a particular datastore
 
-    --TODO: DETERMINE CORRECT VALUE:
-    GET_COOLDOWN = 60.0;		    -- Amount of cooldown time that a recent get of a key is considered fresh
+	--TODO: DETERMINE CORRECT VALUE:
+    GET_COOLDOWN = 60.0;			-- Amount of cooldown time that a recent get of a key is considered fresh
 
-    THROTTLE_QUEUE_SIZE = 30;       -- Amount of requests that can be throttled at once (additional requests will error)
+    THROTTLE_QUEUE_SIZE = 30;		-- Amount of requests that can be throttled at once (additional requests will error)
 
-    BUDGETING_ENABLED = true;       -- Whether budgets are enforced and calculated
+    BUDGETING_ENABLED = true;		-- Whether budgets are enforced and calculated
 
-    BUDGET_GETASYNC = {             -- Budget constant storing structure
+    BUDGET_GETASYNC = {				-- Budget constant storing structure
         START = 100;			    	-- Starting budget
         RATE = 60;				    	-- Added budget per minute
         RATE_PLR = 10;			    	-- Additional added budget per minute per player
@@ -67,6 +67,6 @@ return {
     BUDGET_UPDATE_INTERVAL = 1.0;	-- Time interval in seconds at which budgets are updated (do not put too low)
 
     -- TODO: currently unused:
-    BUDGET_STUDIO_MAX_FACTOR = 100; -- This overrides MAX_FACTOR if datastores are accessed through plugins/command bar
+    BUDGET_STUDIO_MAX_FACTOR = 100;	-- This overrides MAX_FACTOR if datastores are accessed through plugins/command bar
 
 }
