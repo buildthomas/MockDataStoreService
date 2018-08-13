@@ -35,7 +35,7 @@ function MockOrderedDataStore:OnUpdate(key, callback)
 	)
 
 	if not success then
-		error("OnUpdate rejected with error: request was throttled, but throttled queue was full.", 2)
+		error("OnUpdate rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
 	return self.__event.Event:Connect(function(k, v)
@@ -65,7 +65,7 @@ function MockOrderedDataStore:GetAsync(key)
 	)
 
 	if not success then
-		error("GetAsync rejected with error: request was throttled, but throttled queue was full.", 2)
+		error("GetAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
 	self.__getCache[key] = tick()
@@ -117,7 +117,7 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 	end
 
 	if not success then
-		error("IncrementAsync rejected with error: request was throttled, but throttled queue was full.", 2)
+		error("IncrementAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
 	local old = self.__data[key]
@@ -126,7 +126,7 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 		if Constants.YIELD_TIME_MAX > 0 then
 			wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 		end
-		error("IncrementAsync rejected with error: cannot increment non-integer value.", 2)
+		error("IncrementAsync rejected with error (cannot increment non-integer value)", 2)
 	end
 
 	delta = delta and math.floor(delta + .5) or 1
@@ -190,7 +190,7 @@ function MockOrderedDataStore:RemoveAsync(key)
 	end
 
 	if not success then
-		error("RemoveAsync rejected with error: request was throttled, but throttled queue was full.", 2)
+		error("RemoveAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
 	local value = self.__data[key]
@@ -255,7 +255,7 @@ function MockOrderedDataStore:SetAsync(key, value)
 	end
 
 	if not success then
-		error("SetAsync rejected with error: request was throttled, but throttled queue was full.", 2)
+		error("SetAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
 	local old = self.__data[key]
@@ -326,13 +326,13 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 	end
 
 	if not success then
-		error("UpdateAsync rejected with error: request was throttled, but throttled queue was full.", 2)
+		error("UpdateAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
 	local value = transformFunction(self.__data[key])
 
 	if type(value) ~= "number" or value%1 ~= 0 then
-		error("bad argument #2 to 'UpdateAsync' (resulting non-integer value can't be stored in OrderedDataStore)", 2)
+		error("UpdateAsync rejected with error (resulting non-integer value can't be stored in OrderedDataStore)", 2)
 	end
 
 	local old = self.__data[key]
@@ -400,14 +400,14 @@ function MockOrderedDataStore:GetSortedAsync(ascending, pagesize, minValue, maxV
 	)
 
 	if not success then
-		error("GetSortedAsync rejected with error: request was throttled, but throttled queue was full.", 2)
+		error("GetSortedAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
 	if minValue > maxValue then
 		if Constants.YIELD_TIME_MAX > 0 then
 			wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 		end
-		error("GetSortedAsync rejected with error: minimum threshold is higher than maximum threshold.", 2)
+		error("GetSortedAsync rejected with error (minimum threshold is higher than maximum threshold)", 2)
 	end
 
 	if self.__changed then

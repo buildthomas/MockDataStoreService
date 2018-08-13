@@ -27,7 +27,7 @@ end
 
 function MockDataStorePages:AdvanceToNextPageAsync()
 	if self.IsFinished then
-		error("AdvanceToNextPageAsync rejected with error: No pages to advance to.", 2)
+		error("AdvanceToNextPageAsync rejected with error (no pages to advance to)", 2)
 	end
 
 	local success = MockDataStoreManager:YieldForBudget(
@@ -38,7 +38,7 @@ function MockDataStorePages:AdvanceToNextPageAsync()
 	)
 
 	if not success then
-		error("AdvanceToNextPageAsync rejected with error: request was throttled, but throttled queue was full.", 2)
+		error("AdvanceToNextPageAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
 	self.__currentpage = self.__currentpage + 1

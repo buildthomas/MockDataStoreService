@@ -60,7 +60,7 @@ local function scanValidity(tbl, passed, path) -- Credit to Corecii (edited)
 			last = key
 		end
 		if type(value) == "userdata" or type(value) == "function" or type(value) == "thread" then
-			return false, path, "cannot store values of type " .. typeof(value)
+			return false, path, "cannot store value '" .. tostring(value) .. "' of type " .. typeof(value)
 		end
 		if type(value) == "table" then
 			if passed[value] then
@@ -97,14 +97,14 @@ local function importPairsFromTable(origin, destination, interface, warnFunc, me
 			warnFunc(("%s: ignored %s > '%s' (length of encoded value exceeds %d character limit)")
 				:format(methodName, prefix, key, Constants.MAX_LENGTH_DATA))
 		elseif type(value) == "function" or type(value) == "userdata" or type(value) == "thread" then
-			warnFunc(("%s: ignored %s > '%s' (cannot store values of type %s)")
-				:format(methodName, prefix, key, type(value)))
+			warnFunc(("%s: ignored %s > '%s' (cannot store value '%s' of type %s)")
+				:format(methodName, prefix, key, tostring(value), type(value)))
 		elseif isOrdered and type(value) ~= "number" then
-			warnFunc(("%s: ignored %s > '%s' (cannot store values of type %s in OrderedDataStore)")
-				:format(methodName, prefix, key, type(value)))
+			warnFunc(("%s: ignored %s > '%s' (cannot store value '%s' of type %s in OrderedDataStore)")
+				:format(methodName, prefix, key, tostring(value), type(value)))
 		elseif isOrdered and value%1 ~= 0 then
-			warnFunc(("%s: ignored %s > '%s' (cannot store non-integer values in OrderedDataStore)")
-				:format(methodName, prefix, key, type(value)))
+			warnFunc(("%s: ignored %s > '%s' (cannot store non-integer value '%s' in OrderedDataStore)")
+				:format(methodName, prefix, key, tostring(value)))
 		else
 			local isValid = true
 			local keyPath, reason
