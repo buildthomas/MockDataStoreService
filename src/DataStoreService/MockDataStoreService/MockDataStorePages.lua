@@ -45,7 +45,9 @@ function MockDataStorePages:AdvanceToNextPageAsync()
 		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 	end
 
-	self.__currentpage = self.__currentpage + 1
+	if #self.__results <= self.__currentpage * self.__pagesize then
+		self.__currentpage = self.__currentpage + 1
+	end
 	self.IsFinished = #self.__results <= self.__currentpage * self.__pagesize
 end
 
