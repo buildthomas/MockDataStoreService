@@ -13,7 +13,7 @@ It is recommended to use this code in the structure that it is provided in, and 
 **Usage:**
 
 ```lua
-local DataStoreService = require(the.path.to.MockDataStoreService)
+local DataStoreService = require(the.path.to.DataStoreService)
 
 -- Use as actual DataStoreService, i.e.:
 
@@ -81,10 +81,6 @@ DataStoreService:ImportFromJSON({ -- feed table or json string
 print(DataStoreService:ExportToJSON())
 
 ```
-
-There is also a small helper module provided at the top-level ("DataStoreService") that automatically detects and selects which datastores should be used (real datastores for published games with API access, mock datastores for offline games / published games without API access).
-
-It is recommended to use this code with the structure provided in the repository, and to simply call `require(path.to.DataStoreService)` instead of `game:GetService("DataStoreService")` in your code.
 
 Review the API of datastores here:
 - http://wiki.roblox.com/index.php?title=API:Class/DataStoreService
