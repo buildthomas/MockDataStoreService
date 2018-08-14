@@ -1,7 +1,7 @@
 <h1 align="center">MockDataStoreService</h1>
 <div align="center">
-	<a href="https://travis-ci.org/buildthomas/MockDataStoreService">
-		<img src="https://api.travis-ci.org/buildthomas/MockDataStoreService.svg?branch=master" />
+	<a href="https://travis-ci.com/buildthomas/MockDataStoreService">
+		<img src="https://travis-ci.com/buildthomas/MockDataStoreService.svg?branch=master" />
 	</a>
 	<a href="https://coveralls.io/github/buildthomas/MockDataStoreService?branch=master">
 		<img src="https://coveralls.io/repos/github/buildthomas/MockDataStoreService/badge.svg?branch=master" />
@@ -9,7 +9,7 @@
 </div>
 
 <div align="center">
-	Emulation of DataStoreService for seamless offline and local development & testing
+	Emulation of Roblox's DataStoreService for seamless offline and local development & testing
 </div>
 
 <div>&nbsp;</div>
