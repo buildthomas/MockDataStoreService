@@ -32,7 +32,7 @@ end
 -- Load TestEZ and run our tests
 local TestEZ = habitat:require(Root.TestEZ)
 
-local results = TestEZ.TestBootstrap:run(Root.DataStoreService, TestEZ.Reporters.TextReporter)
+local results = TestEZ.TestBootstrap:run(Root.TestDataStoreService, TestEZ.Reporters.TextReporter)
 
 -- Did something go wrong?
 if results.failureCount > 0 then
