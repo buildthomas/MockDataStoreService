@@ -14,9 +14,9 @@
 
 <div>&nbsp;</div>
 
-This is an open-source module that emulates datastores in Lua rather than using the actual service. This is useful for testing in offline projects / local place files with code/frameworks that need to have access to datastores.
+This is a set of modules that emulates datastores in Lua rather than using the actual service. This is useful for testing in offline projects / local place files with code/frameworks that need to have access to datastores.
 
-The MockDataStoreService behaves exactly like DataStoreService -- it has the same API, and will also work even if the place is not currently published to a game with Studio API access enabled (it will act as a DataStoreService with no data stored on the back-end, unless you import some data from a json string manually using the module).
+The MockDataStoreService behaves exactly like DataStoreService: it has the same API, and will also work even if the place is not currently published to a game with Studio API access enabled (it will act as a DataStoreService with no data stored on the back-end, unless you import some data from a json string manually using the module).
 
 A small top-level helper module is provided (DataStoreService) that automatically detects and selects which datastores should be used (real datastores for published games with API access, mock datastores for offline games / published games without API access).
 
