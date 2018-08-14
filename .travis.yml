@@ -5,6 +5,7 @@ sudo: false
 branches:
   only:
     - master
+    - patch-testing
 
 env:
   - LUA="lua=5.1"
