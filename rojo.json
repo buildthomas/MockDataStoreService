@@ -1,0 +1,10 @@
+{
+  "name": "MockDataStoreService",
+  "servePort": 8000,
+  "partitions": {
+    "DataStoreService": {
+      "path": "lib",
+      "target": "ServerScriptService.DataStoreService"
+    }
+  }
+}
