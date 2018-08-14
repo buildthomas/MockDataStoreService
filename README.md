@@ -1,4 +1,18 @@
-# MockDataStoreService
+<h1 align="center">MockDataStoreService</h1>
+<div align="center">
+	<a href="https://travis-ci.com/buildthomas/MockDataStoreService">
+		<img src="https://travis-ci.com/buildthomas/MockDataStoreService.svg?branch=master" />
+	</a>
+	<a href="https://coveralls.io/github/buildthomas/MockDataStoreService?branch=master">
+		<img src="https://coveralls.io/repos/github/buildthomas/MockDataStoreService/badge.svg?branch=master" />
+	</a>
+</div>
+
+<div align="center">
+	Emulation of Roblox's DataStoreService for seamless offline development & testing
+</div>
+
+<div>&nbsp;</div>
 
 This is an open-source module that emulates datastores in Lua rather than using the actual service. This is useful for testing in offline projects / local place files with code/frameworks that need to have access to datastores.
 
