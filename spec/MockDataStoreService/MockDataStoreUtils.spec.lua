@@ -63,7 +63,7 @@ return function()
 
         it("should copy nested arrays/dictionaries/mixed tables correctly", function()
             local test = {
-                a = { 42 };
+                a = { 42; };
                 b = {
                     c = 3.14;
                     d = { "Testing"; 1; 2; 3 };
@@ -102,40 +102,101 @@ return function()
 
     describe("Utils.scanValidity", function()
 
-        it("", function()
-        
+        it("should report nothing for proper entries", function()
+            local test1 = { a = 1; b = {1; 2; 3}; c = 3; }
+            local test2 = { a = "Test"; b = {true; false; true}; c = "Hello world!"; }
+
+            expect(Utils.scanValidity(test1)).to.equal(true)
+            expect(Utils.scanValidity(test2)).to.equal(true)
         end)
 
-        it("", function()
-        
+        it("should report invalidly typed values", function()
+            local test1 = { a = function() end; b = 2; c = 3; }
+            local test2 = { a = 1; b = {"a"; Instance.new("Part"); "c"}; c = Instance.new("Model"); }
+            local test3 = { a = 1; b = coroutine.create(function() end); c = {coroutine.create(function() end)}; }
+
+            local isValid, keyPath, reason = Utils.scanValidity(test1)
+            expect(isValid).to.equal(false)
+            expect(keyPath).to.be.ok()
+            expect(reason).to.be.ok()
+
+            isValid, keyPath, reason = Utils.scanValidity(test2)
+            expect(isValid).to.equal(false)
+            expect(keyPath).to.be.ok()
+            expect(reason).to.be.ok()
+
+            isValid, keyPath, reason = Utils.scanValidity(test3)
+            expect(isValid).to.equal(false)
+            expect(keyPath).to.be.ok()
+            expect(reason).to.be.ok()
         end)
 
-        it("", function()
-        
+        it("should report mixed tables", function()
+            local test1 = { a = 1; 2; 3; }
+            local test2 = { a = { "1"; b = "2"; "3" }; b = 2; }
+
+            local isValid, keyPath, reason = Utils.scanValidity(test1)
+            expect(isValid).to.equal(false)
+            expect(keyPath).to.be.ok()
+            expect(reason).to.be.ok()
+
+            isValid, keyPath, reason = Utils.scanValidity(test2)
+            expect(isValid).to.equal(false)
+            expect(keyPath).to.be.ok()
+            expect(reason).to.be.ok()
         end)
 
-        it("", function()
-        
+        it("should report array tables with holes", function()
+            local test = { [1] = "a"; [2] = "b"; [4] = "c"; [-1] = "d"}
+
+            local isValid, keyPath, reason = Utils.scanValidity(test)
+            expect(isValid).to.equal(false)
+            expect(keyPath).to.be.ok()
+            expect(reason).to.be.ok()
         end)
 
-        it("", function()
-        
+        it("should report float indices", function()
+            local test = { [-1.4] = "a"; [math.pi] = "b"; [1/9] = "c"; }
+
+            local isValid, keyPath, reason = Utils.scanValidity(test)
+            expect(isValid).to.equal(false)
+            expect(keyPath).to.be.ok()
+            expect(reason).to.be.ok()
         end)
 
-        it("", function()
-        
+        it("should report invalidly typed indices", function()
+            local test = { [true] = "a"; [function() end] = "b"; [Instance.new("Part")] = "c"; }
+
+            local isValid, keyPath, reason = Utils.scanValidity(test)
+            expect(isValid).to.equal(false)
+            expect(keyPath).to.be.ok()
+            expect(reason).to.be.ok()
         end)
 
-        it("", function()
-        
+        it("should report cyclic tables", function()
+            local test1 = { level = { baz = 3; }; foo = 1; bar = 2; }
+            test1.level.test = test1
+            local test2 = { recursion = {}; }
+            test2.recursion.recursion = test2.recursion
+
+            local isValid, keyPath, reason = Utils.scanValidity(test1)
+            expect(isValid).to.equal(false)
+            expect(keyPath).to.be.ok()
+            expect(reason).to.be.ok()
+
+            isValid, keyPath, reason = Utils.scanValidity(test2)
+            expect(isValid).to.equal(false)
+            expect(keyPath).to.be.ok()
+            expect(reason).to.be.ok()
         end)
 
-        it("", function()
-        
-        end)
+        it("should report infinite/-infinite indices", function()
+            local test = { [-math.huge] = "Hello"; [math.huge] = "world!"; }
 
-        it("", function()
-        
+            local isValid, keyPath, reason = Utils.scanValidity(test)
+            expect(isValid).to.equal(false)
+            expect(keyPath).to.be.ok()
+            expect(reason).to.be.ok()
         end)
 
     end)
@@ -150,36 +211,23 @@ return function()
 
     end)
 
-    describe("Utils.importPairsFromTable", function()
-        
-    end)
+    -- Utils.importPairsFromTable is not tested here, but through
+    -- DataStoreService/GlobalDataStore/OrderedDataStore:ImportFromJSON(...)
 
     describe("Utils.prepareDataStoresForExport", function()
 
-        it("", function()
-            local DataStores = {}
+        it("should strip off empty scopes", function()
+            local stores = { TestScope = {Key1 = 1; Key2 = 2; Key3 = 3}; TestScope2 = {}; }
 
-
+            stores = Utils.prepareDataStoresForExport(stores)
+            expect(stores.TestScope).to.be.ok()
+            expect(stores.TestScope2).to.never.be.ok()
         end)
 
-        it("", function()
-        
-        end)
+        it("should return nothing if entirely empty", function()
+            local stores = { TestScope = {}; TestScope2 = {}; TestScope3 = {}; }
 
-        it("", function()
-        
-        end)
-
-        it("", function()
-        
-        end)
-
-        it("", function()
-        
-        end)
-
-        it("", function()
-        
+            expect(Utils.prepareDataStoresForExport(stores)).to.never.be.ok()
         end)
 
     end)
