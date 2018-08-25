@@ -16,6 +16,7 @@ return function()
             local MockOrderedDataStore = getDataStoreService():GetOrderedDataStore("Test", "Test")
             local MockDataStorePages = MockOrderedDataStore:GetSortedAsync(true, 100)
             expect(MockDataStorePages.AdvanceToNextPageAsync).to.be.a("function")
+            expect(MockDataStorePages.IsFinished).to.be.a("boolean")
         end)
 
     end)
@@ -23,6 +24,11 @@ return function()
     describe("MockDataStorePages::AdvanceToNextPageAsync", function()
 
         it("should get all results", function()
+            local MockOrderedDataStore = getDataStoreService():GetOrderedDataStore("Test", "Test")
+
+        end)
+
+        it("should report correctly ordered results", function()
             
         end)
 
@@ -30,11 +36,11 @@ return function()
             
         end)
 
-        it("", function()
+        it("should not report results out of range", function()
             
         end)
 
-        it("should throw when no more pages", function()
+        it("should throw when no more pages left", function()
             
         end)
 

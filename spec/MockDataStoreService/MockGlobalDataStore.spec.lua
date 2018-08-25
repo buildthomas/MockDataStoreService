@@ -13,6 +13,7 @@ return function()
     describe("MockGlobalDataStore", function()
 
         it("should expose all API members", function()
+            local MockGlobalDataStore = getDataStoreService():GetOrderedDataStore("Test", "Test")
             expect(MockGlobalDataStore.GetAsync).to.be.a("function")
             expect(MockGlobalDataStore.IncrementAsync).to.be.a("function")
             expect(MockGlobalDataStore.RemoveAsync).to.be.a("function")
