@@ -126,8 +126,8 @@ return function()
             }
             local testWithInstances = {
                 a = 1;
-                b = {"a", Instance.new("Part"), "c"};
-                c = Instance.new("Model");
+                b = {"a", Instance.new("Frame"), "c"};
+                c = Instance.new("Frame");
             }
             local testWithCoroutines = {
                 a = 1;
@@ -204,7 +204,7 @@ return function()
             local dictionaryInvalidKeys = {
                 [true] = "a";
                 [function() end] = "b";
-                [Instance.new("Part")] = "c";
+                [Instance.new("Frame")] = "c";
             }
 
             local isValid, keyPath, reason = Utils.scanValidity(dictionaryInvalidKeys)
