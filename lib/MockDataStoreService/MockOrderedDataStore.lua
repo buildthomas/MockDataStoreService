@@ -57,6 +57,11 @@ function MockOrderedDataStore:GetAsync(key)
 		error(("bad argument #1 to 'GetAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
+	if self.__getCache[key] and tick() - self.__getCache[key] < Constants.GET_COOLDOWN then
+		self.__getCache[key] = tick()
+		return self.__data[key]
+	end
+
 	local success = MockDataStoreManager:YieldForBudget(
 		function()
 			warn(("GetAsync request was throttled due to lack of budget. Try sending fewer requests. Key = %s"):format(key))
@@ -68,13 +73,13 @@ function MockOrderedDataStore:GetAsync(key)
 		error("GetAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
-	self.__getCache[key] = tick()
-
 	local retValue = self.__data[key]
 
 	if Constants.YIELD_TIME_MAX > 0 then
 		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 	end
+
+	self.__getCache[key] = tick()
 
 	return retValue
 end
@@ -154,6 +159,8 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 
 	self.__writeLock[key] = nil
 	self.__writeCache[key] = tick()
+
+	self.__getCache[key] = tick()
 
 	return retValue
 end
@@ -318,10 +325,9 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 	else
 		self.__writeLock[key] = true
 		local budget
-		if tick() - (self.__getCache[key] or 0) < Constants.GET_COOLDOWN then
+		if self.__getCache[key] and tick() - self.__getCache[key] < Constants.GET_COOLDOWN then
 			budget = {Enum.DataStoreRequestType.SetIncrementSortedAsync}
 		else
-			self.__getCache[key] = tick()
 			budget = {Enum.DataStoreRequestType.GetAsync, Enum.DataStoreRequestType.SetIncrementSortedAsync}
 		end
 		success = MockDataStoreManager:YieldForBudget(
@@ -367,6 +373,8 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 
 	self.__writeLock[key] = nil
 	self.__writeCache[key] = tick()
+
+	self.__getCache[key] = tick()
 
 	return value
 end
