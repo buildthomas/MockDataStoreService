@@ -56,6 +56,11 @@ function MockGlobalDataStore:GetAsync(key)
 		error(("bad argument #1 to 'GetAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
+	if self.__getCache[key] and tick() - self.__getCache[key] < Constants.GET_COOLDOWN then
+		self.__getCache[key] = tick()
+		return Utils.deepcopy(self.__data[key])
+	end
+
 	local success = MockDataStoreManager:YieldForBudget(
 		function()
 			warn(("GetAsync request was throttled due to lack of budget. Try sending fewer requests. Key = %s"):format(key))
@@ -146,6 +151,8 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 
 	self.__writeLock[key] = nil
 	self.__writeCache[key] = tick()
+
+	self.__getCache[key] = tick()
 
 	return retValue
 end
@@ -310,10 +317,9 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 	else
 		self.__writeLock[key] = true
 		local budget
-		if tick() - (self.__getCache[key] or 0) < Constants.GET_COOLDOWN then
+		if self.__getCache[key] and tick() - self.__getCache[key] < Constants.GET_COOLDOWN then
 			budget = {Enum.DataStoreRequestType.SetIncrementAsync}
 		else
-			self.__getCache[key] = tick()
 			budget = {Enum.DataStoreRequestType.GetAsync, Enum.DataStoreRequestType.SetIncrementAsync}
 		end
 		success = MockDataStoreManager:YieldForBudget(
@@ -372,6 +378,8 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 
 	self.__writeLock[key] = nil
 	self.__writeCache[key] = tick()
+
+	self.__getCache[key] = tick()
 
 	return retValue
 end
