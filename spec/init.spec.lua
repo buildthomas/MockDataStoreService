@@ -7,6 +7,7 @@ return function()
         it("should return the MockDataStoreService in the test environment", function()
             local MockDataStoreService = require(script.Parent.Parent.DataStoreService.MockDataStoreService)
 
+            expect(MockDataStoreService).to.be.ok()
             expect(MockDataStoreService).to.equal(DataStoreService)
         end)
 
