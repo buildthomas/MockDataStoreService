@@ -8,6 +8,7 @@ return function()
     local function reset()
         MockDataStoreManager:ResetData()
         MockDataStoreManager:ResetBudget()
+        MockDataStoreManager:ThawBudgetUpdates()
     end
 
     describe("MockDataStoreService", function()
@@ -26,21 +27,8 @@ return function()
     describe("MockDataStoreService::GetDataStore", function()
 
         it("should return an object for valid input", function()
-
-            local store
-
-            expect(function()
-                store = MockDataStoreService:GetDataStore("Test")
-            end).never.to.throw()
-
-            expect(store).to.be.ok()
-
-            expect(function()
-                store = MockDataStoreService:GetDataStore("Test", "Test")
-            end).never.to.throw()
-
-            expect(store).to.be.ok()
-
+            expect(MockDataStoreService:GetDataStore("Test")).to.be.ok()
+            expect(MockDataStoreService:GetDataStore("Test2", "Test2")).to.be.ok()
         end)
 
         it("should throw for invalid input", function()
@@ -92,21 +80,8 @@ return function()
     describe("MockDataStoreService::GetOrderedDataStore", function()
 
         it("should return an object for valid input", function()
-
-            local store
-
-            expect(function()
-                store = MockDataStoreService:GetOrderedDataStore("Test")
-            end).never.to.throw()
-
-            expect(store).to.be.ok()
-
-            expect(function()
-                store = MockDataStoreService:GetOrderedDataStore("Test2", "Test2")
-            end).never.to.throw()
-
-            expect(store).to.be.ok()
-
+            expect(MockDataStoreService:GetOrderedDataStore("Test")).to.be.ok()
+            expect(MockDataStoreService:GetOrderedDataStore("Test2", "Test2")).to.be.ok()
         end)
 
         it("should throw for invalid input", function()
@@ -205,7 +180,7 @@ return function()
                         First = {First = "Hello"};
                         Second = {First = true, Second = false};
                         Third = 3;
-                        Fourth = {"One", 1, "Two", 2, "Three", 3};
+                        Fourth = {"One", 1, "Two", 2, "Three", {3, 4, 5, 6}, 7};
                     };
                     TestKey3 = 12345;
                 };
