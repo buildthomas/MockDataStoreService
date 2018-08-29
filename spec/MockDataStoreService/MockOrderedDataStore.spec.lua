@@ -2,6 +2,7 @@ return function()
 
     local MockDataStoreService = require(script.Parent)
     local MockDataStoreManager = require(script.Parent.Parent.Parent.DataStoreService.MockDataStoreService.MockDataStoreManager)
+    local Constants = require(script.Parent.Parent.Parent.DataStoreService.MockDataStoreService.MockDataStoreConstants)
     local HttpService = game:GetService("HttpService")
 
     local function reset()
@@ -40,15 +41,42 @@ return function()
         end)
 
         it("should throttle requests correctly when out of budget", function()
-        
+            --TODO
         end)
 
         it("should throw for invalid input", function()
-        
+            reset()
+            local MockOrderedDataStore = MockDataStoreService:GetOrderedDataStore("Test")
+
+            expect(function()
+                MockOrderedDataStore:GetAsync()
+            end).to.throw()
+
+            expect(function()
+                MockOrderedDataStore:GetAsync(123)
+            end).to.throw()
+
+            expect(function()
+                MockOrderedDataStore:GetAsync("")
+            end).to.throw()
+
+            expect(function()
+                MockOrderedDataStore:GetAsync(("a"):rep(Constants.MAX_LENGTH_KEY + 1))
+            end).to.throw()
+
         end)
 
         it("should set the get-cache", function()
-            
+            reset()
+            MockDataStoreManager:FreezeBudgetUpdates()
+            MockDataStoreManager:SetBudget(Enum.DataStoreRequestType.GetAsync, 2)
+            local MockOrderedDataStore = MockDataStoreService:GetOrderedDataStore("Test")
+
+            MockOrderedDataStore:GetAsync("TestKey")
+            MockOrderedDataStore:GetAsync("TestKey")
+
+            expect(MockDataStoreManager:GetBudget(Enum.DataStoreRequestType.GetAsync)).to.equal(1)
+
         end)
 
     end)
@@ -76,15 +104,24 @@ return function()
         end)
 
         it("should throttle requests correctly when out of budget", function()
-        
+            --TODO
         end)
 
         it("should throttle requests to respect write cooldown", function()
-            
+            --TODO
         end)
 
         it("should set the get-cache", function()
-            
+            reset()
+            MockDataStoreManager:FreezeBudgetUpdates()
+            MockDataStoreManager:SetBudget(Enum.DataStoreRequestType.GetAsync, 2)
+            local MockOrderedDataStore = MockDataStoreService:GetOrderedDataStore("Test")
+
+            MockOrderedDataStore:IncrementAsync("TestKey")
+            MockOrderedDataStore:GetAsync("TestKey")
+
+            expect(MockDataStoreManager:GetBudget(Enum.DataStoreRequestType.GetAsync)).to.equal(2)
+
         end)
 
     end)
@@ -108,19 +145,46 @@ return function()
         end)
 
         it("should throttle requests correctly when out of budget", function()
-        
+            --TODO
         end)
 
         it("should throttle requests to respect write cooldown", function()
-            
+            --TODO
         end)
 
         it("should throw for invalid input", function()
-        
+            reset()
+            local MockOrderedDataStore = MockDataStoreService:GetOrderedDataStore("Test")
+
+            expect(function()
+                MockOrderedDataStore:GetAsync()
+            end).to.throw()
+
+            expect(function()
+                MockOrderedDataStore:GetAsync(123)
+            end).to.throw()
+
+            expect(function()
+                MockOrderedDataStore:GetAsync("")
+            end).to.throw()
+
+            expect(function()
+                MockOrderedDataStore:GetAsync(("a"):rep(Constants.MAX_LENGTH_KEY + 1))
+            end).to.throw()
+
         end)
 
         it("should not set the get-cache", function()
-            
+            reset()
+            MockDataStoreManager:FreezeBudgetUpdates()
+            MockDataStoreManager:SetBudget(Enum.DataStoreRequestType.GetAsync, 2)
+            local MockOrderedDataStore = MockDataStoreService:GetOrderedDataStore("Test")
+
+            MockOrderedDataStore:RemoveAsync("TestKey")
+            MockOrderedDataStore:GetAsync("TestKey")
+
+            expect(MockDataStoreManager:GetBudget(Enum.DataStoreRequestType.GetAsync)).to.equal(1)
+
         end)
 
     end)
@@ -140,11 +204,11 @@ return function()
         end)
 
         it("should throttle requests correctly when out of budget", function()
-        
+            --TODO
         end)
 
         it("should throttle requests to respect write cooldown", function()
-            
+            --TODO
         end)
 
         it("should throw for invalid input", function()
@@ -156,7 +220,16 @@ return function()
         end)
 
         it("should not set the get-cache", function()
-            
+            reset()
+            MockDataStoreManager:FreezeBudgetUpdates()
+            MockDataStoreManager:SetBudget(Enum.DataStoreRequestType.GetAsync, 2)
+            local MockOrderedDataStore = MockDataStoreService:GetOrderedDataStore("Test")
+
+            MockOrderedDataStore:SetAsync("TestKey", 1)
+            MockOrderedDataStore:GetAsync("TestKey")
+
+            expect(MockDataStoreManager:GetBudget(Enum.DataStoreRequestType.GetAsync)).to.equal(1)
+
         end)
 
     end)
@@ -176,11 +249,11 @@ return function()
         end)
 
         it("should throttle requests correctly when out of budget", function()
-        
+            --TODO
         end)
 
         it("should throttle requests to respect write cooldown", function()
-            
+            --TODO
         end)
 
         it("should throw for invalid input", function()
@@ -192,7 +265,16 @@ return function()
         end)
 
         it("should set the get-cache", function()
-            
+            reset()
+            MockDataStoreManager:FreezeBudgetUpdates()
+            MockDataStoreManager:SetBudget(Enum.DataStoreRequestType.GetAsync, 2)
+            local MockOrderedDataStore = MockDataStoreService:GetOrderedDataStore("Test")
+
+            MockOrderedDataStore:UpdateAsync("TestKey", function() return 1 end)
+            MockOrderedDataStore:GetAsync("TestKey")
+
+            expect(MockDataStoreManager:GetBudget(Enum.DataStoreRequestType.GetAsync)).to.equal(1)
+
         end)
 
     end)
@@ -232,11 +314,34 @@ return function()
         end)
 
         it("should throttle requests correctly when out of budget", function()
-        
+            --TODO
         end)
 
         it("should throw for invalid input", function()
         
+        end)
+
+        it("should not set the get-cache", function()
+            reset()
+            MockDataStoreManager:FreezeBudgetUpdates()
+            MockDataStoreManager:SetBudget(Enum.DataStoreRequestType.GetAsync, 2)
+            local MockOrderedDataStore = MockDataStoreService:GetOrderedDataStore("Test")
+
+            local connection = MockOrderedDataStore:OnUpdate("TestKey", function() end)
+
+            local result = expect(function()
+                expect(MockDataStoreManager:GetBudget(Enum.DataStoreRequestType.GetAsync)).to.equal(2)
+                MockOrderedDataStore:GetAsync("TestKey")
+            end)
+
+            if connection then
+                connection:Disconnect()
+            end
+
+            expect(result.never.to.throw())
+
+            expect(MockDataStoreManager:GetBudget(Enum.DataStoreRequestType.GetAsync)).to.equal(1)
+
         end)
 
     end)
@@ -252,7 +357,7 @@ return function()
         end)
 
         it("should throttle requests correctly when out of budget", function()
-        
+            --TODO
         end)
 
         it("should throw for invalid input", function()
