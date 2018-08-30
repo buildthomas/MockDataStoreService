@@ -63,6 +63,9 @@ return {
         MAX_FACTOR = 3;
     };
 
+    BUDGET_BASE = 60;               -- Modifiers used for budget increases on OnClose
+    BUDGET_ONCLOSE_BASE = 150;
+
     BUDGET_UPDATE_INTERVAL = 1.0;	-- Time interval in seconds at which budgets are updated (do not put too low)
 
 }
