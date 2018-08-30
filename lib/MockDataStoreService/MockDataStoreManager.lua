@@ -135,6 +135,20 @@ if RunService:IsServer() then
 			end
 		end
 	end)
+
+	game:BindToClose(function()
+		for requestType, const in pairs(ConstantsMapping) do
+			Budgets[requestType] = math.max(
+				Budgets[requestType],
+				Constants.BUDGET_ONCLOSE_BASE * (const.RATE / Constants.BUDGET_BASE)
+			)
+		end
+		Budgets[Enum.DataStoreRequestType.UpdateAsync] = math.min(
+			Budgets[Enum.DataStoreRequestType.GetAsync],
+			Budgets[Enum.DataStoreRequestType.SetIncrementAsync]
+		)
+	end)
+
 end
 
 function MockDataStoreManager:GetGlobalData()

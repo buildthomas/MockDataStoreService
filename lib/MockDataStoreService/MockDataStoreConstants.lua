@@ -22,8 +22,7 @@ return {
 
     WRITE_COOLDOWN = 6.0;			-- Amount of cooldown time between writes on the same key in a particular datastore
 
-	--TODO: DETERMINE CORRECT VALUE:
-    GET_COOLDOWN = 60.0;			-- Amount of cooldown time that a recent get of a key is considered fresh
+    GET_COOLDOWN = 4.0;		    	-- Amount of cooldown time that a recent interaction with a key is considered fresh
 
     THROTTLE_QUEUE_SIZE = 30;		-- Amount of requests that can be throttled at once (additional requests will error)
 
@@ -64,9 +63,9 @@ return {
         MAX_FACTOR = 3;
     };
 
-    BUDGET_UPDATE_INTERVAL = 1.0;	-- Time interval in seconds at which budgets are updated (do not put too low)
+    BUDGET_BASE = 60;               -- Modifiers used for budget increases on OnClose
+    BUDGET_ONCLOSE_BASE = 150;
 
-    -- TODO: currently unused, is this even useful to have noted here?
-    BUDGET_STUDIO_MAX_FACTOR = 100;	-- This overrides MAX_FACTOR if datastores are accessed through plugins/command bar
+    BUDGET_UPDATE_INTERVAL = 1.0;	-- Time interval in seconds at which budgets are updated (do not put too low)
 
 }
