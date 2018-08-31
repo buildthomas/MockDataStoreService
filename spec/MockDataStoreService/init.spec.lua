@@ -1,163 +1,160 @@
 return function()
-
-    local MockDataStoreService = require(script.Parent)
-    local Constants = require(script.Parent.Parent.Parent.DataStoreService.MockDataStoreService.MockDataStoreConstants)
-    local MockDataStoreManager = require(script.Parent.Parent.Parent.DataStoreService.MockDataStoreService.MockDataStoreManager)
+    local Test = require(script.Parent.Test)
     local HttpService = game:GetService("HttpService")
 
     local function reset()
-        MockDataStoreManager:ResetData()
-        MockDataStoreManager:ResetBudget()
-        MockDataStoreManager:ThawBudgetUpdates()
+        Test.Manager:ResetData()
+        Test.Manager:ResetBudget()
+        Test.Manager:ThawBudgetUpdates()
     end
 
     describe("MockDataStoreService", function()
 
         it("should expose all API members", function()
-            expect(MockDataStoreService.GetDataStore).to.be.a("function")
-            expect(MockDataStoreService.GetGlobalDataStore).to.be.a("function")
-            expect(MockDataStoreService.GetOrderedDataStore).to.be.a("function")
-            expect(MockDataStoreService.GetRequestBudgetForRequestType).to.be.a("function")
-            expect(MockDataStoreService.ImportFromJSON).to.be.a("function")
-            expect(MockDataStoreService.ExportFromJSON).to.be.a("function")
+            expect(Test.Service.GetDataStore).to.be.a("function")
+            expect(Test.Service.GetGlobalDataStore).to.be.a("function")
+            expect(Test.Service.GetOrderedDataStore).to.be.a("function")
+            expect(Test.Service.GetRequestBudgetForRequestType).to.be.a("function")
+            expect(Test.Service.ImportFromJSON).to.be.a("function")
+            expect(Test.Service.ExportFromJSON).to.be.a("function")
         end)
 
     end)
 
-    describe("MockDataStoreService::GetDataStore", function()
+    describe("Test.Service::GetDataStore", function()
 
         it("should return an object for valid input", function()
-            expect(MockDataStoreService:GetDataStore("Test")).to.be.ok()
-            expect(MockDataStoreService:GetDataStore("Test2", "Test2")).to.be.ok()
+            expect(Test.Service:GetDataStore("Test")).to.be.ok()
+            expect(Test.Service:GetDataStore("Test2", "Test2")).to.be.ok()
         end)
 
         it("should throw for invalid input", function()
 
             expect(function()
-                MockDataStoreService:GetDataStore()
+                Test.Service:GetDataStore()
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetDataStore(nil, "Test")
+                Test.Service:GetDataStore(nil, "Test")
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetDataStore("Test", 123)
+                Test.Service:GetDataStore("Test", 123)
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetDataStore(("a"):rep(Constants.MAX_LENGTH_NAME + 1), "Test")
+                Test.Service:GetDataStore(("a"):rep(Test.Constants.MAX_LENGTH_NAME + 1), "Test")
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetDataStore(123, "Test")
+                Test.Service:GetDataStore(123, "Test")
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetDataStore("Test", ("a"):rep(Constants.MAX_LENGTH_SCOPE + 1))
+                Test.Service:GetDataStore("Test", ("a"):rep(Test.Constants.MAX_LENGTH_SCOPE + 1))
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetDataStore("", "Test")
+                Test.Service:GetDataStore("", "Test")
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetDataStore("Test", "")
+                Test.Service:GetDataStore("Test", "")
             end).to.throw()
 
         end)
 
     end)
 
-    describe("MockDataStoreService::GetGlobalDataStore", function()
+    describe("Test.Service::GetGlobalDataStore", function()
 
         it("should return an object", function()
-            expect(MockDataStoreService:GetGlobalDataStore()).to.be.ok()
+            expect(Test.Service:GetGlobalDataStore()).to.be.ok()
         end)
 
     end)
 
-    describe("MockDataStoreService::GetOrderedDataStore", function()
+    describe("Test.Service::GetOrderedDataStore", function()
 
         it("should return an object for valid input", function()
-            expect(MockDataStoreService:GetOrderedDataStore("Test")).to.be.ok()
-            expect(MockDataStoreService:GetOrderedDataStore("Test2", "Test2")).to.be.ok()
+            expect(Test.Service:GetOrderedDataStore("Test")).to.be.ok()
+            expect(Test.Service:GetOrderedDataStore("Test2", "Test2")).to.be.ok()
         end)
 
         it("should throw for invalid input", function()
 
             expect(function()
-                MockDataStoreService:GetOrderedDataStore()
+                Test.Service:GetOrderedDataStore()
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetOrderedDataStore(nil, "Test")
+                Test.Service:GetOrderedDataStore(nil, "Test")
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetOrderedDataStore("Test", 123)
+                Test.Service:GetOrderedDataStore("Test", 123)
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetOrderedDataStore(("a"):rep(51), "Test")
+                Test.Service:GetOrderedDataStore(("a"):rep(51), "Test")
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetOrderedDataStore(123, "Test")
+                Test.Service:GetOrderedDataStore(123, "Test")
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetOrderedDataStore("Test", ("a"):rep(51))
+                Test.Service:GetOrderedDataStore("Test", ("a"):rep(51))
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetOrderedDataStore("", "Test")
+                Test.Service:GetOrderedDataStore("", "Test")
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetOrderedDataStore("Test", "")
+                Test.Service:GetOrderedDataStore("Test", "")
             end).to.throw()
 
         end)
 
     end)
 
-    describe("MockDataStoreService::GetRequestBudgetForRequestType", function()
+    describe("Test.Service::GetRequestBudgetForRequestType", function()
 
         it("should return numerical budgets", function()
             for _,v in pairs(Enum.DataStoreRequestType:GetEnumItems()) do
-                expect(MockDataStoreService:GetRequestBudgetForRequestType(v)).to.be.a("number")
+                expect(Test.Service:GetRequestBudgetForRequestType(v)).to.be.a("number")
             end
         end)
 
         it("should accept enumerator values", function()
             for _,v in pairs(Enum.DataStoreRequestType:GetEnumItems()) do
-                expect(MockDataStoreService:GetRequestBudgetForRequestType(v.Value)).to.be.ok()
+                expect(Test.Service:GetRequestBudgetForRequestType(v.Value)).to.be.ok()
             end
         end)
 
         it("should accept enumerator names", function()
             for _,v in pairs(Enum.DataStoreRequestType:GetEnumItems()) do
-                expect(MockDataStoreService:GetRequestBudgetForRequestType(v.Name)).to.be.ok()
+                expect(Test.Service:GetRequestBudgetForRequestType(v.Name)).to.be.ok()
             end
         end)
 
         it("should throw for invalid input", function()
 
             expect(function()
-                MockDataStoreService:GetRequestBudgetForRequestType("NotARequestType")
+                Test.Service:GetRequestBudgetForRequestType("NotARequestType")
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetRequestBudgetForRequestType()
+                Test.Service:GetRequestBudgetForRequestType()
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetRequestBudgetForRequestType(13373)
+                Test.Service:GetRequestBudgetForRequestType(13373)
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:GetRequestBudgetForRequestType(true)
+                Test.Service:GetRequestBudgetForRequestType(true)
             end).to.throw()
 
         end)
@@ -214,27 +211,7 @@ return function()
         };
     }
 
-    local function subsetOf(t1, t2)
-        if type(t1) ~= "table" or type(t2) ~= "table" then
-            return t1 == t2
-        end
-        for key, value in pairs(t1) do
-            if type(value) == "table" then
-                if type(t2[key]) == "table" then
-                    if not subsetOf(t1[key], t2[key]) then
-                        return false
-                    end
-                else
-                    return false
-                end
-            elseif t1[key] ~= t2[key] then
-                return false
-            end
-        end
-        return true
-    end
-
-    describe("MockDataStoreService::ImportFromJSON", function()
+    describe("Test.Service::ImportFromJSON", function()
 
         it("should import from correct json strings", function()
             reset()
@@ -242,7 +219,7 @@ return function()
             local json = HttpService:JSONEncode(testDataStores)
 
             expect(function()
-                MockDataStoreService:ImportFromJSON(json, false)
+                Test.Service:ImportFromJSON(json, false)
             end).never.to.throw()
 
         end)
@@ -251,7 +228,7 @@ return function()
             reset()
 
             expect(function()
-                MockDataStoreService:ImportFromJSON(testDataStores, false)
+                Test.Service:ImportFromJSON(testDataStores, false)
             end).never.to.throw()
 
         end)
@@ -259,25 +236,25 @@ return function()
         it("should contain newly imported values after importing", function()
             reset()
 
-            MockDataStoreService:ImportFromJSON(testDataStores, false)
+            Test.Service:ImportFromJSON(testDataStores, false)
 
-            local globalData = MockDataStoreManager:GetGlobalData()
+            local globalData = Test.Manager:GetGlobalData()
             expect(globalData).to.be.ok()
-            expect(subsetOf(globalData, testDataStores.GlobalDataStore)).to.equal(true)
+            expect(Test.subsetOf(globalData, testDataStores.GlobalDataStore)).to.equal(true)
 
             for name, scopes in pairs(testDataStores.DataStores) do
                 for scope, data in pairs(scopes) do
-                    local importedData = MockDataStoreManager:GetData(name, scope)
+                    local importedData = Test.Manager:GetData(name, scope)
                     expect(importedData).to.be.ok()
-                    expect(subsetOf(data, importedData)).to.equal(true)
+                    expect(Test.subsetOf(data, importedData)).to.equal(true)
                 end
             end
 
             for name, scopes in pairs(testDataStores.OrderedDataStores) do
                 for scope, data in pairs(scopes) do
-                    local importedData = MockDataStoreManager:GetOrderedData(name, scope)
+                    local importedData = Test.Manager:GetOrderedData(name, scope)
                     expect(importedData).to.be.ok()
-                    expect(subsetOf(data, importedData)).to.equal(true)
+                    expect(Test.subsetOf(data, importedData)).to.equal(true)
                 end
             end
 
@@ -314,19 +291,19 @@ return function()
                 };
             }
 
-            MockDataStoreService:ImportFromJSON(oldValues, false)
+            Test.Service:ImportFromJSON(oldValues, false)
 
-            MockDataStoreService:ImportFromJSON(testDataStores, false)
+            Test.Service:ImportFromJSON(testDataStores, false)
 
-            local globalData = MockDataStoreManager:GetGlobalData()
+            local globalData = Test.Manager:GetGlobalData()
             expect(globalData).to.be.ok()
-            expect(subsetOf(globalData, oldValues.GlobalDataStore)).to.equal(true)
+            expect(Test.subsetOf(globalData, oldValues.GlobalDataStore)).to.equal(true)
 
             for name, scopes in pairs(oldValues.DataStores) do
                 for scope, data in pairs(scopes) do
-                    local importedData = MockDataStoreManager:GetData(name, scope)
+                    local importedData = Test.Manager:GetData(name, scope)
                     expect(importedData).to.be.ok()
-                    expect(subsetOf(data, importedData)).to.equal(true)
+                    expect(Test.subsetOf(data, importedData)).to.equal(true)
                 end
             end
 
@@ -378,65 +355,65 @@ return function()
                 };
             }
 
-            MockDataStoreService:ImportFromJSON(partiallyValid, false)
+            Test.Service:ImportFromJSON(partiallyValid, false)
 
-            expect(MockDataStoreManager:GetData("ImportTestName", "ImportTestScope").TestKey1).to.be.ok()
-            expect(MockDataStoreManager:GetData("ImportTestName", "ImportTestScope").TestKey2).to.never.be.ok()
+            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope").TestKey1).to.be.ok()
+            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope").TestKey2).to.never.be.ok()
 
-            expect(MockDataStoreManager:GetData("ImportTestName", "ImportTestScope2").TestKey1).to.never.be.ok()
-            expect(MockDataStoreManager:GetData("ImportTestName", "ImportTestScope2").TestKey2).to.be.ok()
-            expect(MockDataStoreManager:GetData("ImportTestName", "ImportTestScope2").TestKey3).to.never.be.ok()
+            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope2").TestKey1).to.never.be.ok()
+            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope2").TestKey2).to.be.ok()
+            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope2").TestKey3).to.never.be.ok()
 
-            expect(MockDataStoreManager:GetData("ImportTestName", "ImportTestScope3").TestKey1).to.be.ok()
-            expect(MockDataStoreManager:GetData("ImportTestName", "ImportTestScope3")[frame]).to.never.be.ok()
-            expect(MockDataStoreManager:GetData("ImportTestName", "ImportTestScope3")[true]).to.never.be.ok()
-            expect(MockDataStoreManager:GetData("ImportTestName", "ImportTestScope3")[123]).to.never.be.ok()
-            expect(MockDataStoreManager:GetData("ImportTestName", "ImportTestScope3")[func]).to.never.be.ok()
+            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope3").TestKey1).to.be.ok()
+            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope3")[frame]).to.never.be.ok()
+            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope3")[true]).to.never.be.ok()
+            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope3")[123]).to.never.be.ok()
+            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope3")[func]).to.never.be.ok()
 
-            expect(MockDataStoreManager:GetData("ImportTestName2", "ImportTestScope").TestKey1).to.be.ok()
-            expect(MockDataStoreManager:GetData("ImportTestName2", "ImportTestScope").TestKey2).to.be.ok()
-            expect(MockDataStoreManager:GetData("ImportTestName2", "ImportTestScope").TestKey3).to.never.be.ok()
+            expect(Test.Manager:GetData("ImportTestName2", "ImportTestScope").TestKey1).to.be.ok()
+            expect(Test.Manager:GetData("ImportTestName2", "ImportTestScope").TestKey2).to.be.ok()
+            expect(Test.Manager:GetData("ImportTestName2", "ImportTestScope").TestKey3).to.never.be.ok()
 
-            expect(MockDataStoreManager:GetData("ImportTestName2", "ImportTestScope2").TestKey1).to.never.be.ok()
-            expect(MockDataStoreManager:GetData("ImportTestName2", "ImportTestScope2").TestKey2).to.never.be.ok()
+            expect(Test.Manager:GetData("ImportTestName2", "ImportTestScope2").TestKey1).to.never.be.ok()
+            expect(Test.Manager:GetData("ImportTestName2", "ImportTestScope2").TestKey2).to.never.be.ok()
 
-            expect(MockDataStoreManager:GetGlobalData().TestKey1).to.be.ok()
-            expect(MockDataStoreManager:GetGlobalData().TestKey1).to.be.ok()
-            expect(MockDataStoreManager:GetGlobalData().TestKey1).to.be.ok()
-            expect(MockDataStoreManager:GetGlobalData().TestKey1).to.never.be.ok()
+            expect(Test.Manager:GetGlobalData().TestKey1).to.be.ok()
+            expect(Test.Manager:GetGlobalData().TestKey1).to.be.ok()
+            expect(Test.Manager:GetGlobalData().TestKey1).to.be.ok()
+            expect(Test.Manager:GetGlobalData().TestKey1).to.never.be.ok()
 
         end)
 
         it("should throw for invalid input", function()
 
             expect(function()
-                MockDataStoreService:ImportFromJSON("{this is invalid json}", false)
+                Test.Service:ImportFromJSON("{this is invalid json}", false)
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:ImportFromJSON(123, false)
+                Test.Service:ImportFromJSON(123, false)
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:ImportFromJSON({}, 123)
+                Test.Service:ImportFromJSON({}, 123)
             end).to.throw()
 
             expect(function()
-                MockDataStoreService:ImportFromJSON("{}", 123)
+                Test.Service:ImportFromJSON("{}", 123)
             end).to.throw()
 
         end)
 
     end)
 
-    describe("MockDataStoreService::ExportToJSON", function()
+    describe("Test.Service::ExportToJSON", function()
 
         it("should return valid json", function()
             reset()
 
-            MockDataStoreService:ImportFromJSON(testDataStores, false)
+            Test.Service:ImportFromJSON(testDataStores, false)
 
-            local json = MockDataStoreService:ExportToJSON()
+            local json = Test.Service:ExportToJSON()
 
             expect(function()
                 HttpService:JSONDecode(json)
@@ -447,20 +424,20 @@ return function()
         it("should export all values", function()
             reset()
 
-            MockDataStoreService:ImportFromJSON(testDataStores, false)
+            Test.Service:ImportFromJSON(testDataStores, false)
 
-            local exported = HttpService:JSONDecode(MockDataStoreService:ExportToJSON())
+            local exported = HttpService:JSONDecode(Test.Service:ExportToJSON())
 
-            expect(subsetOf(exported, testDataStores)).to.equal(true)
+            expect(Test.subsetOf(exported, testDataStores)).to.equal(true)
 
         end)
 
         it("should not contain empty datastore scopes", function()
             reset()
 
-            MockDataStoreService:ImportFromJSON(testDataStores, false)
+            Test.Service:ImportFromJSON(testDataStores, false)
 
-            local exported = HttpService:JSONDecode(MockDataStoreService:ExportToJSON())
+            local exported = HttpService:JSONDecode(Test.Service:ExportToJSON())
 
             expect(exported.DataStores.ImportTestName.ImportTestScope2).to.never.be.ok()
             expect(exported.OrderedDataStores.ImportTestName.ImportTestScope3).to.never.be.ok()
@@ -471,9 +448,9 @@ return function()
         it("should not contain empty datastore names", function()
             reset()
 
-            MockDataStoreService:ImportFromJSON(testDataStores, false)
+            Test.Service:ImportFromJSON(testDataStores, false)
 
-            local exported = HttpService:JSONDecode(MockDataStoreService:ExportToJSON())
+            local exported = HttpService:JSONDecode(Test.Service:ExportToJSON())
 
             expect(exported.DataStores.ImportTestName2).to.never.be.ok()
             expect(exported.OrderedDataStores.ImportTestName3).to.never.be.ok()
@@ -483,7 +460,7 @@ return function()
         it("should not contain empty datastore types", function()
             reset()
 
-            local exported = HttpService:JSONDecode(MockDataStoreService:ExportToJSON())
+            local exported = HttpService:JSONDecode(Test.Service:ExportToJSON())
 
             expect(exported.DataStores).to.never.be.ok()
             expect(exported.OrderedDataStores).to.never.be.ok()

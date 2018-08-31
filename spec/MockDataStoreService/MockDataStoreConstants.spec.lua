@@ -1,6 +1,5 @@
 return function()
-
-    local Constants = require(script.Parent.Parent.Parent.DataStoreService.MockDataStoreService.MockDataStoreConstants)
+    local Constants = require(script.Parent.Test).Constants
 
     local budgetTypes = {
         "BUDGET_GETASYNC";
@@ -30,8 +29,9 @@ return function()
             expect(Constants.GET_COOLDOWN).to.be.a("number")
             expect(Constants.THROTTLE_QUEUE_SIZE).to.be.a("number")
             expect(Constants.BUDGETING_ENABLED).to.be.a("boolean")
+            expect(Constants.BUDGET_BASE).to.be.a("number")
+            expect(Constants.BUDGET_ONCLOSE_BASE).to.be.a("number")
             expect(Constants.BUDGET_UPDATE_INTERVAL).to.be.a("number")
-            expect(Constants.BUDGET_STUDIO_MAX_FACTOR).to.be.a("number")
         end)
 
         it("should contain all structured values", function()
@@ -81,8 +81,11 @@ return function()
                 expect(Constants[budgetType].MAX_FACTOR > 0).to.equal(true)
             end
 
-            expect(Constants.BUDGET_STUDIO_MAX_FACTOR % 1).to.equal(0)
-            expect(Constants.BUDGET_STUDIO_MAX_FACTOR > 0).to.equal(true)
+            expect(Constants.BUDGET_BASE % 1).to.equal(0)
+            expect(Constants.BUDGET_BASE > 0).to.equal(true)
+
+            expect(Constants.BUDGET_ONCLOSE_BASE % 1).to.equal(0)
+            expect(Constants.BUDGET_ONCLOSE_BASE > 0).to.equal(true)
         end)
 
         it("should have starting budgets that are within the maximum limit", function()

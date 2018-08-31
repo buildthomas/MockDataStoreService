@@ -1,6 +1,5 @@
 return function()
-
-    local Utils = require(script.Parent.Parent.Parent.DataStoreService.MockDataStoreService.MockDataStoreUtils)
+    local Utils = require(script.Parent.Test).Utils
 
     describe("Utils", function()
 
