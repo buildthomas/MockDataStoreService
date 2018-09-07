@@ -346,6 +346,13 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 
 	local value = transformFunction(self.__data[key])
 
+	if value == nil then -- cancel update after remote call
+		if Constants.YIELD_TIME_MAX > 0 then
+			wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
+		end
+		return nil -- this is what datastores do even though it should be old value
+	end
+
 	if typeof(value) ~= "number" or value%1 ~= 0 then
 		error("UpdateAsync rejected with error (resulting non-integer value can't be stored in OrderedDataStore)", 2)
 	end

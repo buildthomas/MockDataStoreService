@@ -338,7 +338,14 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 
 	local value = transformFunction(Utils.deepcopy(self.__data[key]))
 
-	if value == nil or type(value) == "function" or type(value) == "userdata" or type(value) == "thread" then
+	if value == nil then -- cancel update after remote call
+		if Constants.YIELD_TIME_MAX > 0 then
+			wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
+		end
+		return nil -- this is what datastores do even though it should be old value
+	end
+
+	if type(value) == "function" or type(value) == "userdata" or type(value) == "thread" then
 		error(("UpdateAsync rejected with error (resulting value '%s' is of type %s that cannot be stored)")
 			:format(tostring(value), typeof(value)), 2)
 	end
@@ -371,10 +378,6 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 	end
 
 	local retValue = Utils.deepcopy(value)
-
-	if Constants.YIELD_TIME_MAX > 0 then
-		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
-	end
 
 	self.__writeLock[key] = nil
 	self.__writeCache[key] = tick()
