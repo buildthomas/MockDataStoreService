@@ -22,7 +22,7 @@ return {
 
     WRITE_COOLDOWN = 6.0;			-- Amount of cooldown time between writes on the same key in a particular datastore
 
-    GET_COOLDOWN = 4.0;		    	-- Amount of cooldown time that a recent interaction with a key is considered fresh
+    GET_COOLDOWN = 5.0;		    	-- Amount of cooldown time that a recent interaction with a key is considered fresh
 
     THROTTLE_QUEUE_SIZE = 30;		-- Amount of requests that can be throttled at once (additional requests will error)
 
