@@ -20,6 +20,7 @@ stds.roblox = {
 		-- Global Namespaces
 		"Enum",
 		"debug",
+		"utf8",
 
 		math = {
 			fields = {

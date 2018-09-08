@@ -243,6 +243,8 @@ function MockGlobalDataStore:SetAsync(key, value)
 		if #value > Constants.MAX_LENGTH_DATA then
 			error(("bad argument #2 to 'SetAsync' (data length exceeds %d character limit)")
 				:format(Constants.MAX_LENGTH_DATA), 2)
+		elseif not utf8.len(value) then
+			error("bad argument #2 to 'SetAsync' (string value is not valid UTF-8)", 2)
 		end
 	end
 
@@ -367,6 +369,8 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 		if #value > Constants.MAX_LENGTH_DATA then
 			error(("UpdateAsync rejected with error (resulting data length exceeds %d character limit)")
 				:format(Constants.MAX_LENGTH_DATA), 2)
+		elseif not utf8.len(value) then
+			error("UpdateAsync rejected with error (string value is not valid UTF-8)", 2)
 		end
 	end
 

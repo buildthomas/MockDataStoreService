@@ -52,6 +52,8 @@ local function scanValidity(tbl, passed, path) -- Credit to Corecii (edited)
 			return false, path, "dictionaries cannot have keys of type " .. typeof(key)
 		elseif tblType == "Array" then
 			return false, path, "cannot store mixed tables"
+		elseif not utf8.len(key) then
+			return false, path, "dictionary has key that is invalid UTF-8"
 		end
 		if tblType == "Array" then
 			if last ~= key - 1 then
@@ -61,6 +63,8 @@ local function scanValidity(tbl, passed, path) -- Credit to Corecii (edited)
 		end
 		if type(value) == "userdata" or type(value) == "function" or type(value) == "thread" then
 			return false, path, "cannot store value '" .. tostring(value) .. "' of type " .. typeof(value)
+		elseif type(value) == "string" and not utf8.len(value) then
+			return false, path, "cannot store strings that are invalid UTF-8"
 		end
 		if type(value) == "table" then
 			if passed[value] then
@@ -87,6 +91,9 @@ local function importPairsFromTable(origin, destination, interface, warnFunc, me
 		if typeof(key) ~= "string" then
 			warnFunc(("%s: ignored %s > '%s' (key is not a string, but a %s)")
 				:format(methodName, prefix, tostring(key), typeof(key)))
+		elseif not utf8.len(key) then
+			warnFunc(("%s: ignored %s > '%s' (key is not valid UTF-8)")
+				:format(methodName, prefix, tostring(key)))
 		elseif #key > Constants.MAX_LENGTH_KEY then
 			warnFunc(("%s: ignored %s > '%s' (key exceeds %d character limit)")
 				:format(methodName, prefix, key, Constants.MAX_LENGTH_KEY))
@@ -105,6 +112,9 @@ local function importPairsFromTable(origin, destination, interface, warnFunc, me
 		elseif isOrdered and value%1 ~= 0 then
 			warnFunc(("%s: ignored %s > '%s' (cannot store non-integer value '%s' in OrderedDataStore)")
 				:format(methodName, prefix, key, tostring(value)))
+		elseif type(value) == "string" and not utf8.len(value) then
+			warnFunc(("%s: ignored %s > '%s' (string value is not valid UTF-8)")
+				:format(methodName, prefix, key, tostring(value), type(value)))
 		else
 			local isValid = true
 			local keyPath, reason
