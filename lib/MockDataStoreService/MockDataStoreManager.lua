@@ -124,8 +124,7 @@ if RunService:IsServer() then
 					if not (lock and (lock[key] or tick() - (cache[key] or 0) < Constants.WRITE_COOLDOWN)) and checkBudget(budget) then
 						table.remove(budgetRequestQueue, i)
 						stealBudget(budget)
-						--coroutine.resume(thread)
-						thread:Fire()
+						coroutine.resume(thread)
 					end
 				end
 			end
@@ -213,18 +212,14 @@ function MockDataStoreManager:YieldForWriteLockAndBudget(callback, key, writeLoc
 
 	callback() -- would i.e. trigger a warning in output
 
-	--local thread = coroutine.running()
-	local thread = Instance.new("BindableEvent")
 	table.insert(budgetRequestQueues[mainRequestType], 1, {
 		Key = key;
 		Lock = writeLock;
 		Cache = writeCache;
-		Thread = thread;
+		Thread = coroutine.running();
 		Budget = budget;
 	})
-	--coroutine.yield()
-	thread.Event:Wait()
-	thread:Destroy()
+	coroutine.yield()
 
 	return true
 end
@@ -242,16 +237,12 @@ function MockDataStoreManager:YieldForBudget(callback, budget)
 	else
 		callback() -- would i.e. trigger a warning in output
 
-		--local thread = coroutine.running()
-		local thread = Instance.new("BindableEvent")
 		table.insert(budgetRequestQueues[mainRequestType], 1, {
 			After = 0; -- no write lock
-			Thread = thread;
+			Thread = coroutine.running();
 			Budget = budget;
 		})
-		--coroutine.yield()
-		thread.Event:Wait()
-		thread:Destroy()
+		coroutine.yield()
 	end
 
 	return true
