@@ -10,6 +10,69 @@ local MockDataStoreUtils = {}
 local Constants = require(script.Parent.MockDataStoreConstants)
 local HttpService = game:GetService("HttpService") -- for json encode/decode
 
+local function shorten(s, num)
+	if #s > num then
+		return s:sub(1,num-2) .. ".."
+	end
+	return s
+end
+
+--[[
+	[DataStore] [Name/Scope] [GetAsync] KEY
+	[DataStore] [Name/Scope] [UpdateAsync] KEY => VALUE
+	[DataStore] [Name/Scope] [SetAsync] KEY => VALUE
+	[DataStore] [Name/Scope] [IncrementAsync] KEY by INCR => VALUE
+	[DataStore] [Name/Scope] [RemoveAsync] KEY =/> VALUE
+	[DataStore] [Name/Scope] [OnUpdate] KEY
+	[DataStore] [Name/Scope] [GetSortedAsync]
+
+	[OrderedDataStore] [Name/Scope] [GetAsync] KEY
+	[OrderedDataStore] [Name/Scope] [UpdateAsync] KEY => VALUE
+	[OrderedDataStore] [Name/Scope] [SetAsync] KEY => VALUE
+	[OrderedDataStore] [Name/Scope] [IncrementAsync] KEY + INCR => VALUE
+	[OrderedDataStore] [Name/Scope] [RemoveAsync] KEY =/> VALUE
+	[OrderedDataStore] [Name/Scope] [OnUpdate] KEY
+	[OrderedDataStore] [Name/Scope] [GetSortedAsync]
+
+	[OrderedDataStore] [Name/Scope] [AdvanceToNextPageAsync]
+]]
+
+local function logMethod(self, method, key, value, increment)
+	if not Constants.LOGGING_ENABLED or typeof(Constants.LOGGING_FUNCTION) ~= "function" then
+		return
+	end
+
+	local name = self.__name
+	local scope = self.__scope
+
+	local prefix
+	if not name then
+		prefix = ("[GlobalDataStore] [%s]"):format(method)
+	elseif not scope then
+		prefix = ("[%s] [%s] [%s]"):format(self.__type, shorten(name, 20), method)
+	else
+		prefix = ("[%s] [%s/%s] [%s]"):format(self.__type, shorten(name, 15), shorten(scope, 15))
+	end
+
+	local message
+	if value and increment then
+		message = key .. " + " .. tostring(increment) .. " => " .. tostring(value)
+	elseif increment then
+		message = key .. " + " .. tostring(increment)
+	elseif value then
+		if method == "RemoveAsync" then
+			message = key .. " =/> " .. tostring(value)
+		else
+			message = key .. " => " .. tostring(value)
+		end
+	else
+		message = "key"
+	end
+
+	Constants.LOGGING_FUNCTION(prefix .. " " .. message)
+
+end
+
 local function deepcopy(t)
 	if typeof(t) == "table" then
 		local n = {}
@@ -174,6 +237,7 @@ local function prepareDataStoresForExport(origin)
 end
 
 -- Setting these here so the functions above can self-reference just by name:
+MockDataStoreUtils.logMethod = logMethod
 MockDataStoreUtils.deepcopy = deepcopy
 MockDataStoreUtils.scanValidity = scanValidity
 MockDataStoreUtils.getStringPath = getStringPath

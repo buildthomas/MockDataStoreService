@@ -57,6 +57,7 @@ MockDataStoreService.GetGlobalDataStore = makeGetWrapper(
         end
 
         local value = {
+			__type = "GlobalDataStore";
             __data = data; -- Mapping from <key> to <value>
             __event = Instance.new("BindableEvent"); -- For OnUpdate
 			__writeCache = {};
@@ -82,6 +83,7 @@ MockDataStoreService.GetDataStore = makeGetWrapper(
         end
 
         local value = {
+			__type = "GlobalDataStore";
             __name = name;
             __scope = scope;
             __data = data; -- Mapping from <key> to <value>
@@ -108,6 +110,7 @@ MockDataStoreService.GetOrderedDataStore = makeGetWrapper(
         end
 
         local value = {
+			__type = "OrderedDataStore";
             __name = name;
             __scope = scope;
             __data = data; -- Mapping from <key> to <value>

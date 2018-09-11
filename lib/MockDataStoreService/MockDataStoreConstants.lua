@@ -7,6 +7,9 @@
 
 return {
 
+    LOGGING_ENABLED = false;        -- Verbose logging of transactions to output
+    LOGGING_FUNCTION = warn;        -- Function for logging messages
+
     MAX_LENGTH_KEY = 50;			-- Max number of chars in key string
     MAX_LENGTH_NAME = 50;			-- Max number of chars in name string
     MAX_LENGTH_SCOPE = 50;			-- Max number of chars in scope string

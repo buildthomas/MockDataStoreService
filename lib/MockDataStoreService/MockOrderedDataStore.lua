@@ -38,6 +38,8 @@ function MockOrderedDataStore:OnUpdate(key, callback)
 		error("OnUpdate rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
+	Utils.logMethod(self, "OnUpdate", key)
+
 	return self.__event.Event:Connect(function(k, v)
 		if k == key then
 			if Constants.YIELD_TIME_UPDATE_MAX > 0 then
@@ -80,6 +82,8 @@ function MockOrderedDataStore:GetAsync(key)
 	end
 
 	self.__getCache[key] = tick()
+
+	Utils.logMethod(self, "GetAsync", key)
 
 	return retValue
 end
@@ -162,6 +166,8 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 
 	self.__getCache[key] = tick()
 
+	Utils.logMethod(self, "IncrementAsync", key, retValue, delta)
+
 	return retValue
 end
 
@@ -225,6 +231,8 @@ function MockOrderedDataStore:RemoveAsync(key)
 
 	self.__writeLock[key] = nil
 	self.__writeCache[key] = tick()
+
+	Utils.logMethod(self, "RemoveAsync", key, value)
 
 	return value
 end
@@ -294,6 +302,8 @@ function MockOrderedDataStore:SetAsync(key, value)
 
 	self.__writeLock[key] = nil
 	self.__writeCache[key] = tick()
+
+	Utils.logMethod(self, "SetAsync", key, self.__data[key])
 
 	return value
 end
@@ -383,6 +393,8 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 
 	self.__getCache[key] = tick()
 
+	Utils.logMethod(self, "UpdateAsync", key, value)
+
 	return value
 end
 
@@ -468,7 +480,10 @@ function MockOrderedDataStore:GetSortedAsync(ascending, pageSize, minValue, maxV
 		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 	end
 
+	Utils.logMethod(self, "GetSortedAsync")
+
 	return setmetatable({
+		__datastore = self;
 		__currentPage = 1;
 		__pageSize = pageSize;
 		__results = results;
