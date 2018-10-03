@@ -15,7 +15,7 @@ elseif game:GetService("RunService"):IsStudio() then -- Published file in Studio
 		-- This will error if current instance has no Studio API access:
 		game:GetService("DataStoreService"):GetDataStore("__TEST"):UpdateAsync("__TEST", function(...) return ... end)
 	end)
-	if not status and (message:lower():find("api access") or message:lower():find("http 403")) then -- HACK
+	if not status and message:find("403") then -- HACK
 		-- Can connect to datastores, but no API access
 		shouldUseMock = true
 	end
