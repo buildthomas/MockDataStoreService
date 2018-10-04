@@ -13,7 +13,7 @@ if game.GameId == 0 then -- Local place file
 elseif game:GetService("RunService"):IsStudio() then -- Published file in Studio
 	local status, message = pcall(function()
 		-- This will error if current instance has no Studio API access:
-		game:GetService("DataStoreService"):GetDataStore("__TEST"):UpdateAsync("__TEST", function(...) return ... end)
+		game:GetService("DataStoreService"):GetDataStore("__TEST"):SetAsync("__TEST", "__TEST_" .. os.time())
 	end)
 	if not status and message:find("403", 1, true) then -- HACK
 		-- Can connect to datastores, but no API access
