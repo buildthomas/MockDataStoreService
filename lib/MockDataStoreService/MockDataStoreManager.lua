@@ -151,8 +151,8 @@ function MockDataStoreManager:GetGlobalData()
 end
 
 function MockDataStoreManager:GetData(name, scope)
-	assert(typeof(name) == "string")
-	assert(typeof(scope) == "string")
+	assert(type(name) == "string")
+	assert(type(scope) == "string")
 
 	if not Data.DataStore[name] then
 		Data.DataStore[name] = {}
@@ -165,8 +165,8 @@ function MockDataStoreManager:GetData(name, scope)
 end
 
 function MockDataStoreManager:GetOrderedData(name, scope)
-	assert(typeof(name) == "string")
-	assert(typeof(scope) == "string")
+	assert(type(name) == "string")
+	assert(type(scope) == "string")
 
 	if not Data.OrderedDataStore[name] then
 		Data.OrderedDataStore[name] = {}
@@ -183,8 +183,8 @@ function MockDataStoreManager:GetDataInterface(data)
 end
 
 function MockDataStoreManager:SetDataInterface(data, interface)
-	assert(typeof(data) == "table")
-	assert(typeof(interface) == "table")
+	assert(type(data) == "table")
+	assert(type(interface) == "table")
 
 	Interfaces[data] = interface
 end
@@ -198,10 +198,10 @@ function MockDataStoreManager:GetBudget(requestType)
 end
 
 function MockDataStoreManager:YieldForWriteLockAndBudget(callback, key, writeLock, writeCache, budget)
-	assert(typeof(callback) == "function")
-	assert(typeof(key) == "string")
-	assert(typeof(writeLock) == "table")
-	assert(typeof(writeCache) == "table")
+	assert(type(callback) == "function")
+	assert(type(key) == "string")
+	assert(type(writeLock) == "table")
+	assert(type(writeCache) == "table")
 	assert(#budget > 0)
 
 	local mainRequestType = budget[1]
@@ -225,7 +225,7 @@ function MockDataStoreManager:YieldForWriteLockAndBudget(callback, key, writeLoc
 end
 
 function MockDataStoreManager:YieldForBudget(callback, budget)
-	assert(typeof(callback) == "function")
+	assert(type(callback) == "function")
 	assert(#budget > 0)
 
 	local mainRequestType = budget[1]
@@ -263,31 +263,31 @@ end
 -- Import into an entire datastore type:
 local function importDataStoresFromTable(origin, destination, warnFunc, methodName, prefix, isOrdered)
 	for name, scopes in pairs(origin) do
-		if typeof(name) ~= "string" then
-			warnFunc(("%s: ignored %s > '%s' (name is not a string, but a %s)")
+		if type(name) ~= "string" then
+			warnFunc(("%s: ignored %s > %q (name is not a string, but a %s)")
 				:format(methodName, prefix, tostring(name), typeof(name)))
-		elseif typeof(scopes) ~= "table" then
-			warnFunc(("%s: ignored %s > '%s' (scope list is not a table, but a %s)")
+		elseif type(scopes) ~= "table" then
+			warnFunc(("%s: ignored %s > %q (scope list is not a table, but a %s)")
 				:format(methodName, prefix, name, typeof(scopes)))
 		elseif #name == 0 then
-			warnFunc(("%s: ignored %s > '%s' (name is an empty string)")
+			warnFunc(("%s: ignored %s > %q (name is an empty string)")
 				:format(methodName, prefix, name))
 		elseif #name > Constants.MAX_LENGTH_NAME then
-			warnFunc(("%s: ignored %s > '%s' (name exceeds %d character limit)")
+			warnFunc(("%s: ignored %s > %q (name exceeds %d character limit)")
 				:format(methodName, prefix, name, Constants.MAX_LENGTH_NAME))
 		else
 			for scope, data in pairs(scopes) do
-				if typeof(scope) ~= "string" then
-					warnFunc(("%s: ignored %s > '%s' > '%s' (scope is not a string, but a %s)")
+				if type(scope) ~= "string" then
+					warnFunc(("%s: ignored %s > %q > %q (scope is not a string, but a %s)")
 						:format(methodName, prefix, name, tostring(scope), typeof(scope)))
-				elseif typeof(data) ~= "table" then
-					warnFunc(("%s: ignored %s > '%s' > '%s' (data list is not a table, but a %s)")
+				elseif type(data) ~= "table" then
+					warnFunc(("%s: ignored %s > %q > %q (data list is not a table, but a %s)")
 						:format(methodName, prefix, name, scope, typeof(data)))
 				elseif #scope == 0 then
-					warnFunc(("%s: ignored %s > '%s' > '%s' (scope is an empty string)")
+					warnFunc(("%s: ignored %s > %q > %q (scope is an empty string)")
 						:format(methodName, prefix, name, scope))
 				elseif #scope > Constants.MAX_LENGTH_SCOPE then
-					warnFunc(("%s: ignored %s > '%s' > '%s' (scope exceeds %d character limit)")
+					warnFunc(("%s: ignored %s > %q > %q (scope exceeds %d character limit)")
 						:format(methodName, prefix, name, scope, Constants.MAX_LENGTH_SCOPE))
 				else
 					if not destination[name] then
@@ -302,7 +302,7 @@ local function importDataStoresFromTable(origin, destination, warnFunc, methodNa
 						Interfaces[destination[name][scope]],
 						warnFunc,
 						methodName,
-						("%s > '%s' > '%s'"):format(prefix, name, scope),
+						("%s > %q > %q"):format(prefix, name, scope),
 						isOrdered
 					)
 				end
@@ -313,13 +313,13 @@ end
 
 function MockDataStoreManager:ImportFromJSON(json, verbose)
 	local content
-	if typeof(json) == "string" then
+	if type(json) == "string" then
 		local parsed, value = pcall(function() return HttpService:JSONDecode(json) end)
 		if not parsed then
 			error("bad argument #1 to 'ImportFromJSON' (string is not valid json)", 2)
 		end
 		content = value
-	elseif typeof(json) == "table" then
+	elseif type(json) == "table" then
 		content = Utils.deepcopy(json)
 	else
 		error(("bad argument #1 to 'ImportFromJSON' (string or table expected, got %s)"):format(typeof(json)), 2)
@@ -330,7 +330,7 @@ function MockDataStoreManager:ImportFromJSON(json, verbose)
 		warnFunc = function() end
 	end
 
-	if typeof(content.GlobalDataStore) == "table" then
+	if type(content.GlobalDataStore) == "table" then
 		Utils.importPairsFromTable(
 			content.GlobalDataStore,
 			Data.GlobalDataStore,
@@ -341,7 +341,7 @@ function MockDataStoreManager:ImportFromJSON(json, verbose)
 			false
 		)
 	end
-	if typeof(content.DataStore) == "table" then
+	if type(content.DataStore) == "table" then
 		importDataStoresFromTable(
 			content.DataStore,
 			Data.DataStore,
@@ -351,7 +351,7 @@ function MockDataStoreManager:ImportFromJSON(json, verbose)
 			false
 		)
 	end
-	if typeof(content.OrderedDataStore) == "table" then
+	if type(content.OrderedDataStore) == "table" then
 		importDataStoresFromTable(
 			content.OrderedDataStore,
 			Data.OrderedDataStore,
