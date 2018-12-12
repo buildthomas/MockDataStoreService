@@ -31,7 +31,7 @@ function MockDataStorePages:AdvanceToNextPageAsync()
 		error("AdvanceToNextPageAsync rejected with error (no pages to advance to)", 2)
 	end
 
-	local success = MockDataStoreManager:YieldForBudget(
+	local success = MockDataStoreManager.YieldForBudget(
 		function()
 			warn("AdvanceToNextPageAsync request was throttled due to lack of budget. Try sending fewer requests.")
 		end,

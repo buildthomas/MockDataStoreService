@@ -49,9 +49,9 @@ end
 MockDataStoreService.GetGlobalDataStore = makeGetWrapper(
 	"GetGlobalDataStore",
     function()
-        local data = MockDataStoreManager:GetGlobalData()
+        local data = MockDataStoreManager.GetGlobalData()
 
-        local interface = MockDataStoreManager:GetDataInterface(data)
+        local interface = MockDataStoreManager.GetDataInterface(data)
         if interface then
             return interface
         end
@@ -65,7 +65,7 @@ MockDataStoreService.GetGlobalDataStore = makeGetWrapper(
 			__getCache = {};
         }
         interface = setmetatable(value, MockGlobalDataStore)
-		MockDataStoreManager:SetDataInterface(data, interface)
+		MockDataStoreManager.SetDataInterface(data, interface)
 
 		return interface
 	end,
@@ -75,9 +75,9 @@ MockDataStoreService.GetGlobalDataStore = makeGetWrapper(
 MockDataStoreService.GetDataStore = makeGetWrapper(
 	"GetDataStore",
 	function(name, scope)
-        local data = MockDataStoreManager:GetData(name, scope)
+        local data = MockDataStoreManager.GetData(name, scope)
 
-        local interface = MockDataStoreManager:GetDataInterface(data)
+        local interface = MockDataStoreManager.GetDataInterface(data)
         if interface then
             return interface
         end
@@ -93,7 +93,7 @@ MockDataStoreService.GetDataStore = makeGetWrapper(
 			__getCache = {};
         }
         interface = setmetatable(value, MockGlobalDataStore)
-		MockDataStoreManager:SetDataInterface(data, interface)
+		MockDataStoreManager.SetDataInterface(data, interface)
 
         return interface
 	end
@@ -102,9 +102,9 @@ MockDataStoreService.GetDataStore = makeGetWrapper(
 MockDataStoreService.GetOrderedDataStore = makeGetWrapper(
 	"GetOrderedDataStore",
 	function(name, scope)
-        local data = MockDataStoreManager:GetOrderedData(name, scope)
+        local data = MockDataStoreManager.GetOrderedData(name, scope)
 
-        local interface = MockDataStoreManager:GetDataInterface(data)
+        local interface = MockDataStoreManager.GetDataInterface(data)
         if interface then
             return interface
         end
@@ -123,7 +123,7 @@ MockDataStoreService.GetOrderedDataStore = makeGetWrapper(
 			__getCache = {};
         }
         interface = setmetatable(value, MockOrderedDataStore)
-		MockDataStoreManager:SetDataInterface(data, interface)
+		MockDataStoreManager.SetDataInterface(data, interface)
 
 		return interface
 	end
@@ -137,21 +137,21 @@ for _, Enumerator in ipairs(Enum.DataStoreRequestType:GetEnumItems()) do
 	DataStoreRequestTypes[Enumerator.Value] = Enumerator
 end
 
-function MockDataStoreService:GetRequestBudgetForRequestType(requestType)
+function MockDataStoreService:GetRequestBudgetForRequestType(requestType) -- luacheck: ignore self
 	if not DataStoreRequestTypes[requestType] then
 		error(("bad argument #1 to 'GetRequestBudgetForRequestType' (unable to cast '%s' of type %s to DataStoreRequestType)")
 			:format(tostring(requestType), typeof(requestType)), 2)
 	end
 
-	return MockDataStoreManager:GetBudget(DataStoreRequestTypes[requestType])
+	return MockDataStoreManager.GetBudget(DataStoreRequestTypes[requestType])
 end
 
-function MockDataStoreService:ImportFromJSON(...)
-	return MockDataStoreManager:ImportFromJSON(...)
+function MockDataStoreService:ImportFromJSON(...) -- luacheck: ignore self
+	return MockDataStoreManager.ImportFromJSON(...)
 end
 
-function MockDataStoreService:ExportToJSON(...)
-	return MockDataStoreManager:ExportToJSON(...)
+function MockDataStoreService:ExportToJSON(...) -- luacheck: ignore self
+	return MockDataStoreManager.ExportToJSON(...)
 end
 
 return MockDataStoreService

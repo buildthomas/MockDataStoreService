@@ -146,11 +146,11 @@ if RunService:IsServer() then
 
 end
 
-function MockDataStoreManager:GetGlobalData()
+function MockDataStoreManager.GetGlobalData()
 	return Data.GlobalDataStore
 end
 
-function MockDataStoreManager:GetData(name, scope)
+function MockDataStoreManager.GetData(name, scope)
 	assert(type(name) == "string")
 	assert(type(scope) == "string")
 
@@ -164,7 +164,7 @@ function MockDataStoreManager:GetData(name, scope)
 	return Data.DataStore[name][scope]
 end
 
-function MockDataStoreManager:GetOrderedData(name, scope)
+function MockDataStoreManager.GetOrderedData(name, scope)
 	assert(type(name) == "string")
 	assert(type(scope) == "string")
 
@@ -178,18 +178,18 @@ function MockDataStoreManager:GetOrderedData(name, scope)
 	return Data.OrderedDataStore[name][scope]
 end
 
-function MockDataStoreManager:GetDataInterface(data)
+function MockDataStoreManager.GetDataInterface(data)
 	return Interfaces[data]
 end
 
-function MockDataStoreManager:SetDataInterface(data, interface)
+function MockDataStoreManager.SetDataInterface(data, interface)
 	assert(type(data) == "table")
 	assert(type(interface) == "table")
 
 	Interfaces[data] = interface
 end
 
-function MockDataStoreManager:GetBudget(requestType)
+function MockDataStoreManager.GetBudget(requestType)
 	if Constants.BUDGETING_ENABLED then
 		return math.floor(Budgets[requestType] or 0)
 	else
@@ -197,7 +197,7 @@ function MockDataStoreManager:GetBudget(requestType)
 	end
 end
 
-function MockDataStoreManager:YieldForWriteLockAndBudget(callback, key, writeLock, writeCache, budget)
+function MockDataStoreManager.YieldForWriteLockAndBudget(callback, key, writeLock, writeCache, budget)
 	assert(type(callback) == "function")
 	assert(type(key) == "string")
 	assert(type(writeLock) == "table")
@@ -224,7 +224,7 @@ function MockDataStoreManager:YieldForWriteLockAndBudget(callback, key, writeLoc
 	return true
 end
 
-function MockDataStoreManager:YieldForBudget(callback, budget)
+function MockDataStoreManager.YieldForBudget(callback, budget)
 	assert(type(callback) == "function")
 	assert(#budget > 0)
 
@@ -248,7 +248,7 @@ function MockDataStoreManager:YieldForBudget(callback, budget)
 	return true
 end
 
-function MockDataStoreManager:ExportToJSON()
+function MockDataStoreManager.ExportToJSON()
 	local export = {}
 
 	if next(Data.GlobalDataStore) ~= nil then -- GlobalDataStore not empty
@@ -311,7 +311,7 @@ local function importDataStoresFromTable(origin, destination, warnFunc, methodNa
 	end
 end
 
-function MockDataStoreManager:ImportFromJSON(json, verbose)
+function MockDataStoreManager.ImportFromJSON(json, verbose)
 	local content
 	if type(json) == "string" then
 		local parsed, value = pcall(function() return HttpService:JSONDecode(json) end)

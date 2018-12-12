@@ -27,7 +27,7 @@ function MockOrderedDataStore:OnUpdate(key, callback)
 		error(("bad argument #1 to 'OnUpdate' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
-	local success = MockDataStoreManager:YieldForBudget(
+	local success = MockDataStoreManager.YieldForBudget(
 		function()
 			warn(("OnUpdate request was throttled due to lack of budget. Try sending fewer requests. Key = %s"):format(key))
 		end,
@@ -64,7 +64,7 @@ function MockOrderedDataStore:GetAsync(key)
 		return self.__data[key]
 	end
 
-	local success = MockDataStoreManager:YieldForBudget(
+	local success = MockDataStoreManager.YieldForBudget(
 		function()
 			warn(("GetAsync request was throttled due to lack of budget. Try sending fewer requests. Key = %s"):format(key))
 		end,
@@ -103,7 +103,7 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 	local success
 
 	if self.__writeLock[key] or tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
-		success = MockDataStoreManager:YieldForWriteLockAndBudget(
+		success = MockDataStoreManager.YieldForWriteLockAndBudget(
 			function()
 				warn(("IncrementAsync request was throttled, a key can only be written to once every %d seconds. Key = %s")
 					:format(Constants.WRITE_COOLDOWN, key))
@@ -115,7 +115,7 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 		)
 	else
 		self.__writeLock[key] = true
-		success = MockDataStoreManager:YieldForBudget(
+		success = MockDataStoreManager.YieldForBudget(
 			function()
 				warn(("IncrementAsync request was throttled due to lack of budget. Try sending fewer requests. Key = %s")
 					:format(key))
@@ -183,7 +183,7 @@ function MockOrderedDataStore:RemoveAsync(key)
 	local success
 
 	if self.__writeLock[key] or tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
-		success = MockDataStoreManager:YieldForWriteLockAndBudget(
+		success = MockDataStoreManager.YieldForWriteLockAndBudget(
 			function()
 				warn(("RemoveAsync request was throttled, a key can only be written to once every %d seconds. Key = %s")
 					:format(Constants.WRITE_COOLDOWN, key))
@@ -195,7 +195,7 @@ function MockOrderedDataStore:RemoveAsync(key)
 		)
 	else
 		self.__writeLock[key] = true
-		success = MockDataStoreManager:YieldForBudget(
+		success = MockDataStoreManager.YieldForBudget(
 			function()
 				warn(("RemoveAsync request was throttled due to lack of budget. Try sending fewer requests. Key = %s")
 					:format(key))
@@ -253,7 +253,7 @@ function MockOrderedDataStore:SetAsync(key, value)
 	local success
 
 	if self.__writeLock[key] or tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
-		success = MockDataStoreManager:YieldForWriteLockAndBudget(
+		success = MockDataStoreManager.YieldForWriteLockAndBudget(
 			function()
 				warn(("SetAsync request was throttled, a key can only be written to once every %d seconds. Key = %s")
 					:format(Constants.WRITE_COOLDOWN, key))
@@ -265,7 +265,7 @@ function MockOrderedDataStore:SetAsync(key, value)
 		)
 	else
 		self.__writeLock[key] = true
-		success = MockDataStoreManager:YieldForBudget(
+		success = MockDataStoreManager.YieldForBudget(
 			function()
 				warn(("SetAsync request was throttled due to lack of budget. Try sending fewer requests. Key = %s")
 					:format(key))
@@ -322,7 +322,7 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 	local success
 
 	if self.__writeLock[key] or tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
-		success = MockDataStoreManager:YieldForWriteLockAndBudget(
+		success = MockDataStoreManager.YieldForWriteLockAndBudget(
 			function()
 				warn(("UpdateAsync request was throttled, a key can only be written to once every %d seconds. Key = %s")
 					:format(Constants.WRITE_COOLDOWN, key))
@@ -340,7 +340,7 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 		else
 			budget = {Enum.DataStoreRequestType.GetAsync, Enum.DataStoreRequestType.SetIncrementSortedAsync}
 		end
-		success = MockDataStoreManager:YieldForBudget(
+		success = MockDataStoreManager.YieldForBudget(
 			function()
 				warn(("UpdateAsync request was throttled due to lack of budget. Try sending fewer requests. Key = %s")
 					:format(key))
@@ -431,7 +431,7 @@ function MockOrderedDataStore:GetSortedAsync(ascending, pageSize, minValue, maxV
 		maxValue = math.huge
 	end
 
-	local success = MockDataStoreManager:YieldForBudget(
+	local success = MockDataStoreManager.YieldForBudget(
 		function()
 			warn("GetSortedAsync request was throttled due to lack of budget. Try sending fewer requests.")
 		end,
@@ -516,7 +516,7 @@ function MockOrderedDataStore:ImportFromJSON(json, verbose)
 	Utils.importPairsFromTable(
 		content,
 		self.__data,
-		MockDataStoreManager:GetDataInterface(self.__data),
+		MockDataStoreManager.GetDataInterface(self.__data),
 		(verbose == false and function() end or warn),
 		"ImportFromJSON",
 		("OrderedDataStore > %s > %s"):format(self.__name, self.__scope),
