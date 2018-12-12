@@ -38,7 +38,7 @@ end
 ]]
 
 local function logMethod(self, method, key, value, increment)
-	if not Constants.LOGGING_ENABLED or typeof(Constants.LOGGING_FUNCTION) ~= "function" then
+	if not Constants.LOGGING_ENABLED or type(Constants.LOGGING_FUNCTION) ~= "function" then
 		return
 	end
 
@@ -74,7 +74,7 @@ local function logMethod(self, method, key, value, increment)
 end
 
 local function deepcopy(t)
-	if typeof(t) == "table" then
+	if type(t) == "table" then
 		local n = {}
 		for i,v in pairs(t) do
 			n[i] = deepcopy(v)
@@ -106,7 +106,7 @@ local function scanValidity(tbl, passed, path) -- Credit to Corecii (edited)
 		if type(key) == "number" then
 			if tblType == "Dictionary" then
 				return false, path, "cannot store mixed tables"
-			elseif key%1 ~= 0 then
+			elseif key % 1 ~= 0 then
 				return false, path, "cannot store tables with non-integer indices"
 			elseif key == math.huge or key == -math.huge then
 				return false, path, "cannot store tables with (-)infinity indices"
@@ -151,7 +151,7 @@ end
 -- Import into a single datastore:
 local function importPairsFromTable(origin, destination, interface, warnFunc, methodName, prefix, isOrdered)
 	for key, value in pairs(origin) do
-		if typeof(key) ~= "string" then
+		if type(key) ~= "string" then
 			warnFunc(("%s: ignored %s > '%s' (key is not a string, but a %s)")
 				:format(methodName, prefix, tostring(key), typeof(key)))
 		elseif not utf8.len(key) then
@@ -160,10 +160,10 @@ local function importPairsFromTable(origin, destination, interface, warnFunc, me
 		elseif #key > Constants.MAX_LENGTH_KEY then
 			warnFunc(("%s: ignored %s > '%s' (key exceeds %d character limit)")
 				:format(methodName, prefix, key, Constants.MAX_LENGTH_KEY))
-		elseif typeof(value) == "string" and #value > Constants.MAX_LENGTH_DATA then
+		elseif type(value) == "string" and #value > Constants.MAX_LENGTH_DATA then
 			warnFunc(("%s: ignored %s > '%s' (length of value exceeds %d character limit)")
 				:format(methodName, prefix, key, Constants.MAX_LENGTH_DATA))
-		elseif typeof(value) == "table" and #HttpService:JSONEncode(value) > Constants.MAX_LENGTH_DATA then
+		elseif type(value) == "table" and #HttpService:JSONEncode(value) > Constants.MAX_LENGTH_DATA then
 			warnFunc(("%s: ignored %s > '%s' (length of encoded value exceeds %d character limit)")
 				:format(methodName, prefix, key, Constants.MAX_LENGTH_DATA))
 		elseif type(value) == "function" or type(value) == "userdata" or type(value) == "thread" then
@@ -172,7 +172,7 @@ local function importPairsFromTable(origin, destination, interface, warnFunc, me
 		elseif isOrdered and type(value) ~= "number" then
 			warnFunc(("%s: ignored %s > '%s' (cannot store value '%s' of type %s in OrderedDataStore)")
 				:format(methodName, prefix, key, tostring(value), type(value)))
-		elseif isOrdered and value%1 ~= 0 then
+		elseif isOrdered and value % 1 ~= 0 then
 			warnFunc(("%s: ignored %s > '%s' (cannot store non-integer value '%s' in OrderedDataStore)")
 				:format(methodName, prefix, key, tostring(value)))
 		elseif type(value) == "string" and not utf8.len(value) then
@@ -181,7 +181,7 @@ local function importPairsFromTable(origin, destination, interface, warnFunc, me
 		else
 			local isValid = true
 			local keyPath, reason
-			if typeof(value) == "table" then
+			if type(value) == "table" then
 				isValid, keyPath, reason = scanValidity(value)
 			end
 			if isOrdered then

@@ -21,10 +21,10 @@ local function makeGetWrapper(methodName, getObject, isGlobal) -- Helper functio
 		if isGlobal then
 			return getObject()
 		else
-			if typeof(name) ~= "string" then
+			if type(name) ~= "string" then
 				error(("bad argument #1 to '%s' (string expected, got %s)")
 					:format(methodName, typeof(name)), 2)
-			elseif scope ~= nil and typeof(scope) ~= "string" then
+			elseif scope ~= nil and type(scope) ~= "string" then
 				error(("bad argument #2 to '%s' (string expected, got %s)")
 					:format(methodName, typeof(scope)), 2)
 			elseif #name == 0 then

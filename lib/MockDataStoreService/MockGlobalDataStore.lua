@@ -16,9 +16,9 @@ local HttpService = game:GetService("HttpService") -- for json encode/decode
 local rand = Random.new()
 
 function MockGlobalDataStore:OnUpdate(key, callback)
-	if typeof(key) ~= "string" then
+	if type(key) ~= "string" then
 		error(("bad argument #1 to 'OnUpdate' (string expected, got %s)"):format(typeof(key)), 2)
-	elseif typeof(callback) ~= "function" then
+	elseif type(callback) ~= "function" then
 		error(("bad argument #2 to 'OnUpdate' (function expected, got %s)"):format(typeof(callback)), 2)
 	elseif #key == 0 then
 		error("bad argument #1 to 'OnUpdate' (key name can't be empty)", 2)
@@ -50,7 +50,7 @@ function MockGlobalDataStore:OnUpdate(key, callback)
 end
 
 function MockGlobalDataStore:GetAsync(key)
-	if typeof(key) ~= "string" then
+	if type(key) ~= "string" then
 		error(("bad argument #1 to 'GetAsync' (string expected, got %s)"):format(typeof(key)), 2)
 	elseif #key == 0 then
 		error("bad argument #1 to 'GetAsync' (key name can't be empty)", 2)
@@ -88,9 +88,9 @@ function MockGlobalDataStore:GetAsync(key)
 end
 
 function MockGlobalDataStore:IncrementAsync(key, delta)
-	if typeof(key) ~= "string" then
+	if type(key) ~= "string" then
 		error(("bad argument #1 to 'IncrementAsync' (string expected, got %s)"):format(typeof(key)), 2)
-	elseif delta ~= nil and typeof(delta) ~= "number" then
+	elseif delta ~= nil and type(delta) ~= "number" then
 		error(("bad argument #2 to 'IncrementAsync' (number expected, got %s)"):format(typeof(delta)), 2)
 	elseif #key == 0 then
 		error("bad argument #1 to 'IncrementAsync' (key name can't be empty)", 2)
@@ -130,7 +130,7 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 
 	local old = self.__data[key]
 
-	if old ~= nil and (typeof(old) ~= "number" or old%1 ~= 0) then
+	if old ~= nil and (type(old) ~= "number" or old % 1 ~= 0) then
 		if Constants.YIELD_TIME_MAX > 0 then
 			wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 		end
@@ -164,7 +164,7 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 end
 
 function MockGlobalDataStore:RemoveAsync(key)
-	if typeof(key) ~= "string" then
+	if type(key) ~= "string" then
 		error(("bad argument #1 to 'RemoveAsync' (string expected, got %s)"):format(typeof(key)), 2)
 	elseif #key == 0 then
 		error("bad argument #1 to 'RemoveAsync' (key name can't be empty)", 2)
@@ -223,7 +223,7 @@ function MockGlobalDataStore:RemoveAsync(key)
 end
 
 function MockGlobalDataStore:SetAsync(key, value)
-	if typeof(key) ~= "string" then
+	if type(key) ~= "string" then
 		error(("bad argument #1 to 'SetAsync' (string expected, got %s)"):format(typeof(key)), 2)
 	elseif #key == 0 then
 		error("bad argument #1 to 'SetAsync' (key name can't be empty)", 2)
@@ -234,7 +234,7 @@ function MockGlobalDataStore:SetAsync(key, value)
 			:format(tostring(value), typeof(value)), 2)
 	end
 
-	if typeof(value) == "table" then
+	if type(value) == "table" then
 		local isValid, keyPath, reason = Utils.scanValidity(value)
 		if not isValid then
 			error(("bad argument #2 to 'SetAsync' (table has invalid entry at <%s>: %s)")
@@ -247,7 +247,7 @@ function MockGlobalDataStore:SetAsync(key, value)
 			error(("bad argument #2 to 'SetAsync' (encoded data length exceeds %d character limit)")
 				:format(Constants.MAX_LENGTH_DATA), 2)
 		end
-	elseif typeof(value) == "string" then
+	elseif type(value) == "string" then
 		if #value > Constants.MAX_LENGTH_DATA then
 			error(("bad argument #2 to 'SetAsync' (data length exceeds %d character limit)")
 				:format(Constants.MAX_LENGTH_DATA), 2)
@@ -287,7 +287,7 @@ function MockGlobalDataStore:SetAsync(key, value)
 
 	self.__writeLock[key] = true
 
-	if typeof(value) == "table" or value ~= self.__data[key] then
+	if type(value) == "table" or value ~= self.__data[key] then
 		self.__data[key] = Utils.deepcopy(value)
 		self.__event:Fire(key, self.__data[key])
 	end
@@ -304,9 +304,9 @@ function MockGlobalDataStore:SetAsync(key, value)
 end
 
 function MockGlobalDataStore:UpdateAsync(key, transformFunction)
-	if typeof(key) ~= "string" then
+	if type(key) ~= "string" then
 		error(("bad argument #1 to 'UpdateAsync' (string expected, got %s)"):format(typeof(key)), 2)
-	elseif typeof(transformFunction) ~= "function" then
+	elseif type(transformFunction) ~= "function" then
 		error(("bad argument #2 to 'UpdateAsync' (function expected, got %s)"):format(typeof(transformFunction)), 2)
 	elseif #key == 0 then
 		error("bad argument #1 to 'UpdateAsync' (key name can't be empty)", 2)
@@ -363,7 +363,7 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 			:format(tostring(value), typeof(value)), 2)
 	end
 
-	if typeof(value) == "table" then
+	if type(value) == "table" then
 		local isValid, keyPath, reason = Utils.scanValidity(value)
 		if not isValid then
 			error(("UpdateAsync rejected with error (resulting table has invalid entry at <%s>: %s)")
@@ -376,7 +376,7 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 			error(("UpdateAsync rejected with error (resulting encoded data length exceeds %d character limit)")
 				:format(Constants.MAX_LENGTH_DATA), 2)
 		end
-	elseif typeof(value) == "string" then
+	elseif type(value) == "string" then
 		if #value > Constants.MAX_LENGTH_DATA then
 			error(("UpdateAsync rejected with error (resulting data length exceeds %d character limit)")
 				:format(Constants.MAX_LENGTH_DATA), 2)
@@ -387,7 +387,7 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 
 	self.__writeLock[key] = true
 
-	if typeof(value) == "table" or value ~= self.__data[key] then
+	if type(value) == "table" or value ~= self.__data[key] then
 		self.__data[key] = Utils.deepcopy(value)
 		self.__event:Fire(key, self.__data[key])
 	end
@@ -410,19 +410,19 @@ end
 
 function MockGlobalDataStore:ImportFromJSON(json, verbose)
 	local content
-	if typeof(json) == "string" then
+	if type(json) == "string" then
 		local parsed, value = pcall(function() return HttpService:JSONDecode(json) end)
 		if not parsed then
 			error("bad argument #1 to 'ImportFromJSON' (string is not valid json)", 2)
 		end
 		content = value
-	elseif typeof(json) == "table" then
+	elseif type(json) == "table" then
 		content = Utils.deepcopy(json)
 	else
 		error(("bad argument #1 to 'ImportFromJSON' (string or table expected, got %s)"):format(typeof(json)), 2)
 	end
 
-	if verbose ~= nil and typeof(verbose) ~= "boolean" then
+	if verbose ~= nil and type(verbose) ~= "boolean" then
 		error(("bad argument #2 to 'ImportFromJSON' (boolean expected, got %s)"):format(typeof(verbose)), 2)
 	end
 
@@ -432,7 +432,7 @@ function MockGlobalDataStore:ImportFromJSON(json, verbose)
 		MockDataStoreManager:GetDataInterface(self.__data),
 		(verbose == false and function() end or warn),
 		"ImportFromJSON",
-		((typeof(self.__name) == "string" and typeof(self.__scope) == "string")
+		((type(self.__name) == "string" and type(self.__scope) == "string")
 			and ("DataStore > %s > %s"):format(self.__name, self.__scope)
 			or "GlobalDataStore"),
 		false

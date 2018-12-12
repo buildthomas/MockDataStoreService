@@ -17,9 +17,9 @@ local HttpService = game:GetService("HttpService") -- for json encode/decode
 local rand = Random.new()
 
 function MockOrderedDataStore:OnUpdate(key, callback)
-	if typeof(key) ~= "string" then
+	if type(key) ~= "string" then
 		error(("bad argument #1 to 'OnUpdate' (string expected, got %s)"):format(typeof(key)), 2)
-	elseif typeof(callback) ~= "function" then
+	elseif type(callback) ~= "function" then
 		error(("bad argument #2 to 'OnUpdate' (function expected, got %s)"):format(typeof(callback)), 2)
 	elseif #key == 0 then
 		error("bad argument #1 to 'OnUpdate' (key name can't be empty)", 2)
@@ -51,7 +51,7 @@ function MockOrderedDataStore:OnUpdate(key, callback)
 end
 
 function MockOrderedDataStore:GetAsync(key)
-	if typeof(key) ~= "string" then
+	if type(key) ~= "string" then
 		error(("bad argument #1 to 'GetAsync' (string expected, got %s)"):format(typeof(key)), 2)
 	elseif #key == 0 then
 		error("bad argument #1 to 'GetAsync' (key name can't be empty)", 2)
@@ -89,9 +89,9 @@ function MockOrderedDataStore:GetAsync(key)
 end
 
 function MockOrderedDataStore:IncrementAsync(key, delta)
-	if typeof(key) ~= "string" then
+	if type(key) ~= "string" then
 		error(("bad argument #1 to 'IncrementAsync' (string expected, got %s)"):format(typeof(key)), 2)
-	elseif delta ~= nil and typeof(delta) ~= "number" then
+	elseif delta ~= nil and type(delta) ~= "number" then
 		error(("bad argument #2 to 'IncrementAsync' (number expected, got %s)"):format(typeof(delta)), 2)
 	elseif #key == 0 then
 		error("bad argument #1 to 'IncrementAsync' (key name can't be empty)", 2)
@@ -131,7 +131,7 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 
 	local old = self.__data[key]
 
-	if old ~= nil and (typeof(old) ~= "number" or old%1 ~= 0) then
+	if old ~= nil and (type(old) ~= "number" or old % 1 ~= 0) then
 		if Constants.YIELD_TIME_MAX > 0 then
 			wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 		end
@@ -172,8 +172,8 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 end
 
 function MockOrderedDataStore:RemoveAsync(key)
-	if typeof(key) ~= "string" then
-		error(("bad argument #1 to 'RemoveAsync' (string expected, got %s)"):format(typeof(key)), 2)
+	if type(key) ~= "string" then
+		error(("bad argument #1 to 'RemoveAsync' (string expected, got %s)"):format(type(key)), 2)
 	elseif #key == 0 then
 		error("bad argument #1 to 'RemoveAsync' (key name can't be empty)", 2)
 	elseif #key > Constants.MAX_LENGTH_KEY then
@@ -238,15 +238,15 @@ function MockOrderedDataStore:RemoveAsync(key)
 end
 
 function MockOrderedDataStore:SetAsync(key, value)
-	if typeof(key) ~= "string" then
+	if type(key) ~= "string" then
 		error(("bad argument #1 to 'SetAsync' (string expected, got %s)"):format(typeof(key)), 2)
 	elseif #key == 0 then
 		error("bad argument #1 to 'SetAsync' (key name can't be empty)", 2)
 	elseif #key > Constants.MAX_LENGTH_KEY then
 		error(("bad argument #1 to 'SetAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
-	elseif typeof(value) ~= "number" then
+	elseif type(value) ~= "number" then
 		error(("bad argument #2 to 'SetAsync' (number expected, got %s)"):format(typeof(value)), 2)
-	elseif value%1 ~= 0 then
+	elseif value % 1 ~= 0 then
 		error("bad argument #2 to 'SetAsync' (cannot store non-integer values in OrderedDataStore)", 2)
 	end
 
@@ -309,9 +309,9 @@ function MockOrderedDataStore:SetAsync(key, value)
 end
 
 function MockOrderedDataStore:UpdateAsync(key, transformFunction)
-	if typeof(key) ~= "string" then
+	if type(key) ~= "string" then
 		error(("bad argument #1 to 'UpdateAsync' (string expected, got %s)"):format(typeof(key)), 2)
-	elseif typeof(transformFunction) ~= "function" then
+	elseif type(transformFunction) ~= "function" then
 		error(("bad argument #2 to 'UpdateAsync' (function expected, got %s)"):format(typeof(transformFunction)), 2)
 	elseif #key == 0 then
 		error("bad argument #1 to 'UpdateAsync' (key name can't be empty)", 2)
@@ -363,7 +363,7 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 		return nil -- this is what datastores do even though it should be old value
 	end
 
-	if typeof(value) ~= "number" or value%1 ~= 0 then
+	if type(value) ~= "number" or value % 1 ~= 0 then
 		error("UpdateAsync rejected with error (resulting non-integer value can't be stored in OrderedDataStore)", 2)
 	end
 
@@ -399,9 +399,9 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 end
 
 function MockOrderedDataStore:GetSortedAsync(ascending, pageSize, minValue, maxValue)
-	if typeof(ascending) ~= "boolean" then
+	if type(ascending) ~= "boolean" then
 		error(("bad argument #1 to 'GetSortedAsync' (boolean expected, got %s)"):format(typeof(ascending)), 2)
-	elseif typeof(pageSize) ~= "number" then
+	elseif type(pageSize) ~= "number" then
 		error(("bad argument #2 to 'GetSortedAsync' (number expected, got %s)"):format(typeof(pageSize)), 2)
 	end
 
@@ -412,9 +412,9 @@ function MockOrderedDataStore:GetSortedAsync(ascending, pageSize, minValue, maxV
 	end
 
 	if minValue ~= nil then
-		if typeof(minValue) ~= "number" then
+		if type(minValue) ~= "number" then
 			error(("bad argument #3 to 'GetSortedAsync' (number expected, got %s)"):format(typeof(minValue)), 2)
-		elseif minValue%1 ~= 0 then
+		elseif minValue % 1 ~= 0 then
 			error("bad argument #3 to 'GetSortedAsync' (minimum threshold must be an integer)", 2)
 		end
 	else
@@ -422,9 +422,9 @@ function MockOrderedDataStore:GetSortedAsync(ascending, pageSize, minValue, maxV
 	end
 
 	if maxValue ~= nil then
-		if typeof(maxValue) ~= "number" then
+		if type(maxValue) ~= "number" then
 			error(("bad argument #4 to 'GetSortedAsync' (number expected, got %s)"):format(typeof(maxValue)), 2)
-		elseif maxValue%1 ~= 0 then
+		elseif maxValue % 1 ~= 0 then
 			error("bad argument #4 to 'GetSortedAsync' (maximum threshold must be an integer)", 2)
 		end
 	else
@@ -497,19 +497,19 @@ end
 
 function MockOrderedDataStore:ImportFromJSON(json, verbose)
 	local content
-	if typeof(json) == "string" then
+	if type(json) == "string" then
 		local parsed, value = pcall(function() return HttpService:JSONDecode(json) end)
 		if not parsed then
 			error("bad argument #1 to 'ImportFromJSON' (string is not valid json)", 2)
 		end
 		content = value
-	elseif typeof(json) == "table" then
+	elseif type(json) == "table" then
 		content = json -- No need to deepcopy, OrderedDataStore only contains numbers which are passed by value
 	else
 		error(("bad argument #1 to 'ImportFromJSON' (string or table expected, got %s)"):format(typeof(json)), 2)
 	end
 
-	if verbose ~= nil and typeof(verbose) ~= "boolean" then
+	if verbose ~= nil and type(verbose) ~= "boolean" then
 		error(("bad argument #2 to 'ImportFromJSON' (boolean expected, got %s)"):format(typeof(verbose)), 2)
 	end
 
