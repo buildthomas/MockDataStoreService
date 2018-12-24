@@ -17,6 +17,7 @@ local HttpService = game:GetService("HttpService") -- for json encode/decode
 local rand = Random.new()
 
 function MockOrderedDataStore:OnUpdate(key, callback)
+	key = Utils.preprocessKey(key)
 	if type(key) ~= "string" then
 		error(("bad argument #1 to 'OnUpdate' (string expected, got %s)"):format(typeof(key)), 2)
 	elseif type(callback) ~= "function" then
@@ -51,6 +52,7 @@ function MockOrderedDataStore:OnUpdate(key, callback)
 end
 
 function MockOrderedDataStore:GetAsync(key)
+	key = Utils.preprocessKey(key)
 	if type(key) ~= "string" then
 		error(("bad argument #1 to 'GetAsync' (string expected, got %s)"):format(typeof(key)), 2)
 	elseif #key == 0 then
@@ -89,6 +91,7 @@ function MockOrderedDataStore:GetAsync(key)
 end
 
 function MockOrderedDataStore:IncrementAsync(key, delta)
+	key = Utils.preprocessKey(key)
 	if type(key) ~= "string" then
 		error(("bad argument #1 to 'IncrementAsync' (string expected, got %s)"):format(typeof(key)), 2)
 	elseif delta ~= nil and type(delta) ~= "number" then
@@ -172,6 +175,7 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 end
 
 function MockOrderedDataStore:RemoveAsync(key)
+	key = Utils.preprocessKey(key)
 	if type(key) ~= "string" then
 		error(("bad argument #1 to 'RemoveAsync' (string expected, got %s)"):format(type(key)), 2)
 	elseif #key == 0 then
@@ -238,6 +242,7 @@ function MockOrderedDataStore:RemoveAsync(key)
 end
 
 function MockOrderedDataStore:SetAsync(key, value)
+	key = Utils.preprocessKey(key)
 	if type(key) ~= "string" then
 		error(("bad argument #1 to 'SetAsync' (string expected, got %s)"):format(typeof(key)), 2)
 	elseif #key == 0 then
@@ -309,6 +314,7 @@ function MockOrderedDataStore:SetAsync(key, value)
 end
 
 function MockOrderedDataStore:UpdateAsync(key, transformFunction)
+	key = Utils.preprocessKey(key)
 	if type(key) ~= "string" then
 		error(("bad argument #1 to 'UpdateAsync' (string expected, got %s)"):format(typeof(key)), 2)
 	elseif type(transformFunction) ~= "function" then
