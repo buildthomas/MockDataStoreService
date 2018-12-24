@@ -236,6 +236,20 @@ local function prepareDataStoresForExport(origin)
 	end
 end
 
+local function preprocessKey(key)
+	if type(key) == "number" then
+		if key ~= key then
+			return "NAN"
+		elseif key >= math.huge then
+			return "INF"
+		elseif key <= -math.huge then
+			return "-INF"
+		end
+		return tostring(key)
+	end
+	return key
+end
+
 -- Setting these here so the functions above can self-reference just by name:
 MockDataStoreUtils.logMethod = logMethod
 MockDataStoreUtils.deepcopy = deepcopy
@@ -243,5 +257,6 @@ MockDataStoreUtils.scanValidity = scanValidity
 MockDataStoreUtils.getStringPath = getStringPath
 MockDataStoreUtils.importPairsFromTable = importPairsFromTable
 MockDataStoreUtils.prepareDataStoresForExport = prepareDataStoresForExport
+MockDataStoreUtils.preprocessKey = preprocessKey
 
 return MockDataStoreUtils
