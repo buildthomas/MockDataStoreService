@@ -51,7 +51,7 @@ local function logMethod(self, method, key, value, increment)
 	elseif not scope then
 		prefix = ("[%s] [%s] [%s]"):format(self.__type, shorten(name, 20), method)
 	else
-		prefix = ("[%s] [%s/%s] [%s]"):format(self.__type, shorten(name, 15), shorten(scope, 15))
+		prefix = ("[%s] [%s/%s] [%s]"):format(self.__type, shorten(name, 15), shorten(scope, 15), method)
 	end
 
 	local message
