@@ -1,8 +1,9 @@
---[[	DataStoreService.lua
-		This module decides whether to use actual datastores or mock datastores depending on the environment.
+--[[
+	DataStoreService.lua
+	This module decides whether to use actual datastores or mock datastores depending on the environment.
 
-		This module is licensed under APLv2, refer to the LICENSE file or:
-		https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
+	This module is licensed under APLv2, refer to the LICENSE file or:
+	https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
 ]]
 
 local MockDataStoreServiceModule = script.MockDataStoreService

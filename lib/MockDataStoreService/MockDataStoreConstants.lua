@@ -1,8 +1,9 @@
---[[	MockDataStoreConstants.lua
-		Contains all constants used by the entirety of MockDataStoreService and its sub-classes.
+--[[
+	MockDataStoreConstants.lua
+	Contains all constants used by the entirety of MockDataStoreService and its sub-classes.
 
-		This module is licensed under APLv2, refer to the LICENSE file or:
-		https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
+	This module is licensed under APLv2, refer to the LICENSE file or:
+	https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
 ]]
 
 return {
@@ -64,7 +65,7 @@ return {
         RATE = 30;
         RATE_PLR = 5;
         MAX_FACTOR = 3;
-    };
+	};
 
     BUDGET_BASE = 60;               -- Modifiers used for budget increases on OnClose
     BUDGET_ONCLOSE_BASE = 150;

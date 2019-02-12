@@ -1,8 +1,9 @@
---[[	MockDataStoreManager.lua
-		This module does bookkeeping of data, interfaces and request limits used by MockDataStoreService and its sub-classes.
+--[[
+	MockDataStoreManager.lua
+	This module does bookkeeping of data, interfaces and request limits used by MockDataStoreService and its sub-classes.
 
-		This module is licensed under APLv2, refer to the LICENSE file or:
-		https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
+	This module is licensed under APLv2, refer to the LICENSE file or:
+	https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
 ]]
 
 local MockDataStoreManager = {}

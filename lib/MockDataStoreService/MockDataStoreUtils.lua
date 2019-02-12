@@ -1,8 +1,9 @@
---[[	MockDataStoreUtils.lua
-		Contains helper and utility functions used by other classes.
+--[[
+	MockDataStoreUtils.lua
+	Contains helper and utility functions used by other classes.
 
-		This module is licensed under APLv2, refer to the LICENSE file or:
-		https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
+	This module is licensed under APLv2, refer to the LICENSE file or:
+	https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
 ]]
 
 local MockDataStoreUtils = {}

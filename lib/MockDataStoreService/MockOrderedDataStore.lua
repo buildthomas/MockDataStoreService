@@ -1,8 +1,9 @@
---[[	MockOrderedDataStore.lua
-		This module implements the API and functionality of Roblox's OrderedDataStore class.
+--[[
+	MockOrderedDataStore.lua
+	This module implements the API and functionality of Roblox's OrderedDataStore class.
 
-		This module is licensed under APLv2, refer to the LICENSE file or:
-		https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
+	This module is licensed under APLv2, refer to the LICENSE file or:
+	https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
 ]]
 
 local MockOrderedDataStore = {}
