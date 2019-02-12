@@ -29,6 +29,8 @@ function MockOrderedDataStore:OnUpdate(key, callback)
 		error(("bad argument #1 to 'OnUpdate' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
+	Utils.simulateErrorCheck("OnUpdate")
+
 	local success = MockDataStoreManager.YieldForBudget(
 		function()
 			warn(("OnUpdate request was throttled due to lack of budget. Try sending fewer requests. Key = %s"):format(key))
@@ -67,6 +69,8 @@ function MockOrderedDataStore:GetAsync(key)
 		return self.__data[key]
 	end
 
+	Utils.simulateErrorCheck("GetAsync")
+
 	local success = MockDataStoreManager.YieldForBudget(
 		function()
 			warn(("GetAsync request was throttled due to lack of budget. Try sending fewer requests. Key = %s"):format(key))
@@ -80,9 +84,7 @@ function MockOrderedDataStore:GetAsync(key)
 
 	local retValue = self.__data[key]
 
-	if Constants.YIELD_TIME_MAX > 0 then
-		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
-	end
+	Utils.simulateYield()
 
 	self.__getCache[key] = tick()
 
@@ -103,6 +105,8 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 		error(("bad argument #1 to 'IncrementAsync' (key name exceeds %d character limit)")
 			:format(Constants.MAX_LENGTH_KEY), 2)
 	end
+
+	Utils.simulateErrorCheck("IncrementAsync")
 
 	local success
 
@@ -136,9 +140,7 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 	local old = self.__data[key]
 
 	if old ~= nil and (type(old) ~= "number" or old % 1 ~= 0) then
-		if Constants.YIELD_TIME_MAX > 0 then
-			wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
-		end
+		Utils.simulateYield()
 		error("IncrementAsync rejected with error (cannot increment non-integer value)", 2)
 	end
 
@@ -161,9 +163,7 @@ function MockOrderedDataStore:IncrementAsync(key, delta)
 
 	local retValue = self.__data[key]
 
-	if Constants.YIELD_TIME_MAX > 0 then
-		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
-	end
+	Utils.simulateYield()
 
 	self.__writeLock[key] = nil
 	self.__writeCache[key] = tick()
@@ -184,6 +184,8 @@ function MockOrderedDataStore:RemoveAsync(key)
 	elseif #key > Constants.MAX_LENGTH_KEY then
 		error(("bad argument #1 to 'RemoveAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
+
+	Utils.simulateErrorCheck("RemoveAsync")
 
 	local success
 
@@ -230,9 +232,7 @@ function MockOrderedDataStore:RemoveAsync(key)
 		self.__event:Fire(key, nil)
 	end
 
-	if Constants.YIELD_TIME_MAX > 0 then
-		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
-	end
+	Utils.simulateYield()
 
 	self.__writeLock[key] = nil
 	self.__writeCache[key] = tick()
@@ -255,6 +255,8 @@ function MockOrderedDataStore:SetAsync(key, value)
 	elseif value % 1 ~= 0 then
 		error("bad argument #2 to 'SetAsync' (cannot store non-integer values in OrderedDataStore)", 2)
 	end
+
+	Utils.simulateErrorCheck("SetAsync")
 
 	local success
 
@@ -302,9 +304,7 @@ function MockOrderedDataStore:SetAsync(key, value)
 		self.__event:Fire(key, self.__data[key])
 	end
 
-	if Constants.YIELD_TIME_MAX > 0 then
-		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
-	end
+	Utils.simulateYield()
 
 	self.__writeLock[key] = nil
 	self.__writeCache[key] = tick()
@@ -325,6 +325,8 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 	elseif #key > Constants.MAX_LENGTH_KEY then
 		error(("bad argument #1 to 'UpdateAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
+
+	Utils.simulateErrorCheck("UpdateAsync")
 
 	local success
 
@@ -364,9 +366,7 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 	local value = transformFunction(self.__data[key])
 
 	if value == nil then -- cancel update after remote call
-		if Constants.YIELD_TIME_MAX > 0 then
-			wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
-		end
+		Utils.simulateYield()
 		return nil -- this is what datastores do even though it should be old value
 	end
 
@@ -391,9 +391,7 @@ function MockOrderedDataStore:UpdateAsync(key, transformFunction)
 		self.__event:Fire(key, self.__data[key])
 	end
 
-	if Constants.YIELD_TIME_MAX > 0 then
-		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
-	end
+	Utils.simulateYield()
 
 	self.__writeLock[key] = nil
 	self.__writeCache[key] = tick()
@@ -438,6 +436,8 @@ function MockOrderedDataStore:GetSortedAsync(ascending, pageSize, minValue, maxV
 		maxValue = math.huge
 	end
 
+	Utils.simulateErrorCheck("GetSortedAsync")
+
 	local success = MockDataStoreManager.YieldForBudget(
 		function()
 			warn("GetSortedAsync request was throttled due to lack of budget. Try sending fewer requests.")
@@ -450,9 +450,7 @@ function MockOrderedDataStore:GetSortedAsync(ascending, pageSize, minValue, maxV
 	end
 
 	if minValue > maxValue then
-		if Constants.YIELD_TIME_MAX > 0 then
-			wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
-		end
+		Utils.simulateYield()
 		error("GetSortedAsync rejected with error (minimum threshold is higher than maximum threshold)", 2)
 	end
 
@@ -483,9 +481,7 @@ function MockOrderedDataStore:GetSortedAsync(ascending, pageSize, minValue, maxV
 		end
 	end
 
-	if Constants.YIELD_TIME_MAX > 0 then
-		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
-	end
+	Utils.simulateYield()
 
 	Utils.logMethod(self, "GetSortedAsync")
 

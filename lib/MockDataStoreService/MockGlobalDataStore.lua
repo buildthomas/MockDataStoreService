@@ -28,6 +28,8 @@ function MockGlobalDataStore:OnUpdate(key, callback)
 		error(("bad argument #1 to 'OnUpdate' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
+	Utils.simulateErrorCheck("OnUpdate")
+
 	local success = MockDataStoreManager.YieldForBudget(
 		function()
 			warn(("OnUpdate request was throttled due to lack of budget. Try sending fewer requests. Key = %s"):format(key))
@@ -66,6 +68,8 @@ function MockGlobalDataStore:GetAsync(key)
 		return Utils.deepcopy(self.__data[key])
 	end
 
+	Utils.simulateErrorCheck("GetAsync")
+
 	local success = MockDataStoreManager.YieldForBudget(
 		function()
 			warn(("GetAsync request was throttled due to lack of budget. Try sending fewer requests. Key = %s"):format(key))
@@ -81,9 +85,7 @@ function MockGlobalDataStore:GetAsync(key)
 
 	local retValue = Utils.deepcopy(self.__data[key])
 
-	if Constants.YIELD_TIME_MAX > 0 then
-		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
-	end
+	Utils.simulateYield()
 
 	Utils.logMethod(self, "GetAsync", key)
 
@@ -102,6 +104,8 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 		error(("bad argument #1 to 'IncrementAsync' (key name exceeds %d character limit)")
 			:format(Constants.MAX_LENGTH_KEY), 2)
 	end
+
+	Utils.simulateErrorCheck("IncrementAsync")
 
 	local success
 
@@ -135,9 +139,7 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 	local old = self.__data[key]
 
 	if old ~= nil and (type(old) ~= "number" or old % 1 ~= 0) then
-		if Constants.YIELD_TIME_MAX > 0 then
-			wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
-		end
+		Utils.simulateYield()
 		error("IncrementAsync rejected with error (cannot increment non-integer value)", 2)
 	end
 
@@ -153,9 +155,7 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 
 	local retValue = self.__data[key]
 
-	if Constants.YIELD_TIME_MAX > 0 then
-		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
-	end
+	Utils.simulateYield()
 
 	self.__writeLock[key] = nil
 	self.__writeCache[key] = tick()
@@ -176,6 +176,8 @@ function MockGlobalDataStore:RemoveAsync(key)
 	elseif #key > Constants.MAX_LENGTH_KEY then
 		error(("bad argument #1 to 'RemoveAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
+
+	Utils.simulateErrorCheck("RemoveAsync")
 
 	local success
 
@@ -215,9 +217,7 @@ function MockGlobalDataStore:RemoveAsync(key)
 		self.__event:Fire(key, nil)
 	end
 
-	if Constants.YIELD_TIME_MAX > 0 then
-		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
-	end
+	Utils.simulateYield()
 
 	self.__writeLock[key] = nil
 	self.__writeCache[key] = tick()
@@ -262,6 +262,8 @@ function MockGlobalDataStore:SetAsync(key, value)
 		end
 	end
 
+	Utils.simulateErrorCheck("SetAsync")
+
 	local success
 
 	if self.__writeLock[key] or tick() - (self.__writeCache[key] or 0) < Constants.WRITE_COOLDOWN then
@@ -298,9 +300,7 @@ function MockGlobalDataStore:SetAsync(key, value)
 		self.__event:Fire(key, self.__data[key])
 	end
 
-	if Constants.YIELD_TIME_MAX > 0 then
-		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
-	end
+	Utils.simulateYield()
 
 	self.__writeLock[key] = nil
 	self.__writeCache[key] = tick()
@@ -320,6 +320,8 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 	elseif #key > Constants.MAX_LENGTH_KEY then
 		error(("bad argument #1 to 'UpdateAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
+
+	Utils.simulateErrorCheck("UpdateAsync")
 
 	local success
 
@@ -359,9 +361,7 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 	local value = transformFunction(Utils.deepcopy(self.__data[key]))
 
 	if value == nil then -- cancel update after remote call
-		if Constants.YIELD_TIME_MAX > 0 then
-			wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
-		end
+		Utils.simulateYield()
 		return nil -- this is what datastores do even though it should be old value
 	end
 
