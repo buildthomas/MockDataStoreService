@@ -28,7 +28,9 @@ return {
 
     GET_COOLDOWN = 5.0;		    	-- Amount of cooldown time that a recent interaction with a key is considered fresh
 
-    THROTTLE_QUEUE_SIZE = 30;		-- Amount of requests that can be throttled at once (additional requests will error)
+	THROTTLE_QUEUE_SIZE = 30;		-- Amount of requests that can be throttled at once (additional requests will error)
+
+	SIMULATE_ERROR_RATE = 0;		-- Rate at which requests will throw errors for testing (0 = never, 1 = always)
 
     BUDGETING_ENABLED = true;		-- Whether budgets are enforced and calculated
 
