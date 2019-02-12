@@ -1,9 +1,9 @@
 --[[
-	MockDataStoreConstants.lua
-	Contains all constants used by the entirety of MockDataStoreService and its sub-classes.
+    MockDataStoreConstants.lua
+    Contains all constants used by the entirety of MockDataStoreService and its sub-classes.
 
-	This module is licensed under APLv2, refer to the LICENSE file or:
-	https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
+    This module is licensed under APLv2, refer to the LICENSE file or:
+    https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
 ]]
 
 return {
@@ -28,9 +28,9 @@ return {
 
     GET_COOLDOWN = 5.0;		    	-- Amount of cooldown time that a recent interaction with a key is considered fresh
 
-	THROTTLE_QUEUE_SIZE = 30;		-- Amount of requests that can be throttled at once (additional requests will error)
+    THROTTLE_QUEUE_SIZE = 30;		-- Amount of requests that can be throttled at once (additional requests will error)
 
-	SIMULATE_ERROR_RATE = 0;		-- Rate at which requests will throw errors for testing (0 = never, 1 = always)
+    SIMULATE_ERROR_RATE = 0;        -- Rate at which requests will throw errors for testing (0 = never, 1 = always)
 
     BUDGETING_ENABLED = true;		-- Whether budgets are enforced and calculated
 
@@ -67,7 +67,7 @@ return {
         RATE = 30;
         RATE_PLR = 5;
         MAX_FACTOR = 3;
-	};
+    };
 
     BUDGET_BASE = 60;               -- Modifiers used for budget increases on OnClose
     BUDGET_ONCLOSE_BASE = 150;
