@@ -11,9 +11,6 @@ MockDataStorePages.__index = MockDataStorePages
 
 local MockDataStoreManager = require(script.Parent.MockDataStoreManager)
 local Utils = require(script.Parent.MockDataStoreUtils)
-local Constants = require(script.Parent.MockDataStoreConstants)
-
-local rand = Random.new()
 
 function MockDataStorePages:GetCurrentPage()
 	local retValue = {}
