@@ -11,6 +11,8 @@ local MockDataStoreUtils = {}
 local Constants = require(script.Parent.MockDataStoreConstants)
 local HttpService = game:GetService("HttpService") -- for json encode/decode
 
+local rand = Random.new()
+
 local function shorten(s, num)
 	if #s > num then
 		return s:sub(1,num-2) .. ".."
@@ -251,6 +253,19 @@ local function preprocessKey(key)
 	return key
 end
 
+local function simulateYield()
+	if Constants.YIELD_TIME_MAX > 0 then
+		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
+	end
+end
+
+local function simulateErrorCheck(method)
+	if Constants.SIMULATE_ERROR_RATE > 0 and rand:NextNumber() <= Constants.SIMULATE_ERROR_RATE then
+		simulateYield()
+		error(method .. " rejected with error (simulated error)", 3)
+	end
+end
+
 -- Setting these here so the functions above can self-reference just by name:
 MockDataStoreUtils.logMethod = logMethod
 MockDataStoreUtils.deepcopy = deepcopy
@@ -259,5 +274,7 @@ MockDataStoreUtils.getStringPath = getStringPath
 MockDataStoreUtils.importPairsFromTable = importPairsFromTable
 MockDataStoreUtils.prepareDataStoresForExport = prepareDataStoresForExport
 MockDataStoreUtils.preprocessKey = preprocessKey
+MockDataStoreUtils.simulateYield = simulateYield
+MockDataStoreUtils.simulateErrorCheck = simulateErrorCheck
 
 return MockDataStoreUtils
