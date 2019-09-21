@@ -3,9 +3,9 @@
 	<a href="https://travis-ci.com/buildthomas/MockDataStoreService">
 		<img src="https://travis-ci.com/buildthomas/MockDataStoreService.svg?branch=master" />
 	</a>
-	<a href="https://coveralls.io/github/buildthomas/MockDataStoreService?branch=master">
+	<!--<a href="https://coveralls.io/github/buildthomas/MockDataStoreService?branch=master">
 		<img src="https://coveralls.io/repos/github/buildthomas/MockDataStoreService/badge.svg?branch=master" />
-	</a>
+	</a>-->
 </div>
 
 <div align="center">
