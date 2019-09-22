@@ -1,5 +1,7 @@
 --[[
 	Loads our library and all of its dependencies, then runs tests using TestEZ.
+
+	Currently unused because lemur does not support some Roblox engine features that MockDataStoreService needs
 ]]
 
 -- If you add any dependencies, add them to this table so they'll be loaded!
