@@ -20,6 +20,7 @@ stds.roblox = {
 		-- Global Namespaces
 		"Enum",
 		"debug",
+		"utf8",
 
 		math = {
 			fields = {
@@ -51,7 +52,7 @@ stds.testez = {
 	}
 }
 
-ignore = { "111", "212" }
+ignore = { "111" }
 
 std = "lua51+roblox"
 

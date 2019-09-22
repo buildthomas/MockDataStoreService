@@ -1,8 +1,9 @@
---[[	DataStoreService.lua
-		This module decides whether to use actual datastores or mock datastores depending on the environment.
+--[[
+	DataStoreService.lua
+	This module decides whether to use actual datastores or mock datastores depending on the environment.
 
-		This module is licensed under APLv2, refer to the LICENSE file or:
-		https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
+	This module is licensed under APLv2, refer to the LICENSE file or:
+	https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
 ]]
 
 local MockDataStoreServiceModule = script.MockDataStoreService
@@ -13,9 +14,9 @@ if game.GameId == 0 then -- Local place file
 elseif game:GetService("RunService"):IsStudio() then -- Published file in Studio
 	local status, message = pcall(function()
 		-- This will error if current instance has no Studio API access:
-		game:GetService("DataStoreService"):GetDataStore("__TEST"):UpdateAsync("__TEST", function(...) return ... end)
+		game:GetService("DataStoreService"):GetDataStore("__TEST"):SetAsync("__TEST", "__TEST_" .. os.time())
 	end)
-	if not status and (message:lower():find("api access") or message:lower():find("http 403")) then -- HACK
+	if not status and message:find("403", 1, true) then -- HACK
 		-- Can connect to datastores, but no API access
 		shouldUseMock = true
 	end

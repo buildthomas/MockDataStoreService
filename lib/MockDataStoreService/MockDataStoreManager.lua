@@ -1,8 +1,9 @@
---[[	MockDataStoreManager.lua
-		This module does bookkeeping of data, interfaces and request limits used by MockDataStoreService and its sub-classes.
+--[[
+	MockDataStoreManager.lua
+	This module does bookkeeping of data, interfaces and request limits used by MockDataStoreService and its sub-classes.
 
-		This module is licensed under APLv2, refer to the LICENSE file or:
-		https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
+	This module is licensed under APLv2, refer to the LICENSE file or:
+	https://github.com/buildthomas/MockDataStoreService/blob/master/LICENSE
 ]]
 
 local MockDataStoreManager = {}
@@ -128,8 +129,7 @@ if RunService:IsServer() then
 					if not (lock and (lock[key] or tick() - (cache[key] or 0) < Constants.WRITE_COOLDOWN)) and checkBudget(budget) then
 						table.remove(budgetRequestQueue, i)
 						stealBudget(budget)
-						--coroutine.resume(thread)
-						thread:Fire()
+						coroutine.resume(thread)
 					end
 				end
 			end
@@ -151,13 +151,13 @@ if RunService:IsServer() then
 
 end
 
-function MockDataStoreManager:GetGlobalData()
+function MockDataStoreManager.GetGlobalData()
 	return Data.GlobalDataStore
 end
 
-function MockDataStoreManager:GetData(name, scope)
-	assert(typeof(name) == "string")
-	assert(typeof(scope) == "string")
+function MockDataStoreManager.GetData(name, scope)
+	assert(type(name) == "string")
+	assert(type(scope) == "string")
 
 	if not Data.DataStore[name] then
 		Data.DataStore[name] = {}
@@ -169,9 +169,9 @@ function MockDataStoreManager:GetData(name, scope)
 	return Data.DataStore[name][scope]
 end
 
-function MockDataStoreManager:GetOrderedData(name, scope)
-	assert(typeof(name) == "string")
-	assert(typeof(scope) == "string")
+function MockDataStoreManager.GetOrderedData(name, scope)
+	assert(type(name) == "string")
+	assert(type(scope) == "string")
 
 	if not Data.OrderedDataStore[name] then
 		Data.OrderedDataStore[name] = {}
@@ -183,18 +183,18 @@ function MockDataStoreManager:GetOrderedData(name, scope)
 	return Data.OrderedDataStore[name][scope]
 end
 
-function MockDataStoreManager:GetDataInterface(data)
+function MockDataStoreManager.GetDataInterface(data)
 	return Interfaces[data]
 end
 
-function MockDataStoreManager:SetDataInterface(data, interface)
-	assert(typeof(data) == "table")
-	assert(typeof(interface) == "table")
+function MockDataStoreManager.SetDataInterface(data, interface)
+	assert(type(data) == "table")
+	assert(type(interface) == "table")
 
 	Interfaces[data] = interface
 end
 
-function MockDataStoreManager:GetBudget(requestType)
+function MockDataStoreManager.GetBudget(requestType)
 	if Constants.BUDGETING_ENABLED then
 		return math.floor(Budgets[requestType] or 0)
 	else
@@ -243,24 +243,20 @@ function MockDataStoreManager:YieldForWriteLockAndBudget(callback, key, writeLoc
 
 	callback() -- would i.e. trigger a warning in output
 
-	--local thread = coroutine.running()
-	local thread = Instance.new("BindableEvent")
 	table.insert(budgetRequestQueues[mainRequestType], 1, {
 		Key = key;
 		Lock = writeLock;
 		Cache = writeCache;
-		Thread = thread;
+		Thread = coroutine.running();
 		Budget = budget;
 	})
-	--coroutine.yield()
-	thread.Event:Wait()
-	thread:Destroy()
+	coroutine.yield()
 
 	return true
 end
 
-function MockDataStoreManager:YieldForBudget(callback, budget)
-	assert(typeof(callback) == "function")
+function MockDataStoreManager.YieldForBudget(callback, budget)
+	assert(type(callback) == "function")
 	assert(#budget > 0)
 
 	local mainRequestType = budget[1]
@@ -272,22 +268,18 @@ function MockDataStoreManager:YieldForBudget(callback, budget)
 	else
 		callback() -- would i.e. trigger a warning in output
 
-		--local thread = coroutine.running()
-		local thread = Instance.new("BindableEvent")
 		table.insert(budgetRequestQueues[mainRequestType], 1, {
 			After = 0; -- no write lock
-			Thread = thread;
+			Thread = coroutine.running();
 			Budget = budget;
 		})
-		--coroutine.yield()
-		thread.Event:Wait()
-		thread:Destroy()
+		coroutine.yield()
 	end
 
 	return true
 end
 
-function MockDataStoreManager:ExportToJSON()
+function MockDataStoreManager.ExportToJSON()
 	local export = {}
 
 	if next(Data.GlobalDataStore) ~= nil then -- GlobalDataStore not empty
@@ -302,31 +294,31 @@ end
 -- Import into an entire datastore type:
 local function importDataStoresFromTable(origin, destination, warnFunc, methodName, prefix, isOrdered)
 	for name, scopes in pairs(origin) do
-		if typeof(name) ~= "string" then
-			warnFunc(("%s: ignored %s > '%s' (name is not a string, but a %s)")
+		if type(name) ~= "string" then
+			warnFunc(("%s: ignored %s > %q (name is not a string, but a %s)")
 				:format(methodName, prefix, tostring(name), typeof(name)))
-		elseif typeof(scopes) ~= "table" then
-			warnFunc(("%s: ignored %s > '%s' (scope list is not a table, but a %s)")
+		elseif type(scopes) ~= "table" then
+			warnFunc(("%s: ignored %s > %q (scope list is not a table, but a %s)")
 				:format(methodName, prefix, name, typeof(scopes)))
 		elseif #name == 0 then
-			warnFunc(("%s: ignored %s > '%s' (name is an empty string)")
+			warnFunc(("%s: ignored %s > %q (name is an empty string)")
 				:format(methodName, prefix, name))
 		elseif #name > Constants.MAX_LENGTH_NAME then
-			warnFunc(("%s: ignored %s > '%s' (name exceeds %d character limit)")
+			warnFunc(("%s: ignored %s > %q (name exceeds %d character limit)")
 				:format(methodName, prefix, name, Constants.MAX_LENGTH_NAME))
 		else
 			for scope, data in pairs(scopes) do
-				if typeof(scope) ~= "string" then
-					warnFunc(("%s: ignored %s > '%s' > '%s' (scope is not a string, but a %s)")
+				if type(scope) ~= "string" then
+					warnFunc(("%s: ignored %s > %q > %q (scope is not a string, but a %s)")
 						:format(methodName, prefix, name, tostring(scope), typeof(scope)))
-				elseif typeof(data) ~= "table" then
-					warnFunc(("%s: ignored %s > '%s' > '%s' (data list is not a table, but a %s)")
+				elseif type(data) ~= "table" then
+					warnFunc(("%s: ignored %s > %q > %q (data list is not a table, but a %s)")
 						:format(methodName, prefix, name, scope, typeof(data)))
 				elseif #scope == 0 then
-					warnFunc(("%s: ignored %s > '%s' > '%s' (scope is an empty string)")
+					warnFunc(("%s: ignored %s > %q > %q (scope is an empty string)")
 						:format(methodName, prefix, name, scope))
 				elseif #scope > Constants.MAX_LENGTH_SCOPE then
-					warnFunc(("%s: ignored %s > '%s' > '%s' (scope exceeds %d character limit)")
+					warnFunc(("%s: ignored %s > %q > %q (scope exceeds %d character limit)")
 						:format(methodName, prefix, name, scope, Constants.MAX_LENGTH_SCOPE))
 				else
 					if not destination[name] then
@@ -341,7 +333,7 @@ local function importDataStoresFromTable(origin, destination, warnFunc, methodNa
 						Interfaces[destination[name][scope]],
 						warnFunc,
 						methodName,
-						("%s > '%s' > '%s'"):format(prefix, name, scope),
+						("%s > %q > %q"):format(prefix, name, scope),
 						isOrdered
 					)
 				end
@@ -359,7 +351,7 @@ function MockDataStoreManager:ImportFromJSON(content, verbose)
 		warnFunc = function() end
 	end
 
-	if typeof(content.GlobalDataStore) == "table" then
+	if type(content.GlobalDataStore) == "table" then
 		Utils.importPairsFromTable(
 			content.GlobalDataStore,
 			Data.GlobalDataStore,
@@ -370,7 +362,7 @@ function MockDataStoreManager:ImportFromJSON(content, verbose)
 			false
 		)
 	end
-	if typeof(content.DataStore) == "table" then
+	if type(content.DataStore) == "table" then
 		importDataStoresFromTable(
 			content.DataStore,
 			Data.DataStore,
@@ -380,7 +372,7 @@ function MockDataStoreManager:ImportFromJSON(content, verbose)
 			false
 		)
 	end
-	if typeof(content.OrderedDataStore) == "table" then
+	if type(content.OrderedDataStore) == "table" then
 		importDataStoresFromTable(
 			content.OrderedDataStore,
 			Data.OrderedDataStore,
