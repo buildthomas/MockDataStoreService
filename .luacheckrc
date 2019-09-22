@@ -1,7 +1,6 @@
 stds.roblox = {
 	globals = {
-		"game",
-		"workspace"
+		"game"
 	},
 
 	read_globals = {

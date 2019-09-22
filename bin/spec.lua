@@ -1,5 +1,7 @@
 --[[
 	Loads our library and all of its dependencies, then runs tests using TestEZ.
+
+	Currently unused
 ]]
 
 -- If you add any dependencies, add them to this table so they'll be loaded!
@@ -19,7 +21,7 @@ local lemur = require("vendor.lemur")
 local habitat = lemur.Habitat.new()
 
 -- We'll put all of our library code and dependencies here
-local Root = lemur.Instance.new("Folder")
+local Root = habitat.game:GetService("ServerStorage")
 Root.Name = "Root"
 
 -- Load all of the modules specified above
@@ -29,12 +31,7 @@ for _, module in ipairs(LOAD_MODULES) do
 	container.Parent = Root
 end
 
--- Load TestEZ and run our tests
-local TestEZ = habitat:require(Root.TestEZ)
+local runTests = habitat:loadFromFs("bin/run-tests.server.lua")
 
-local results = TestEZ.TestBootstrap:run(Root.TestDataStoreService, TestEZ.Reporters.TextReporter)
-
--- Did something go wrong?
-if results.failureCount > 0 then
-	os.exit(1)
-end
+-- When Lemur implements a proper scheduling interface, we'll use that instead.
+habitat:require(runTests)

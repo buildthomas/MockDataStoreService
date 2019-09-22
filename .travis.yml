@@ -23,7 +23,10 @@ install:
 
 script:
   - luacheck lib
-  - lua -lluacov spec.lua
+#  - lua -lluacov bin/spec.lua
 
-after_success:
-  - luacov-coveralls -e $TRAVIS_BUILD_DIR/lua_install
+extra_css:
+  - extra.css
+
+#after_success:
+#  - luacov-coveralls -e $TRAVIS_BUILD_DIR/lua_install

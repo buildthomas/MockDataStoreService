@@ -11,7 +11,9 @@ local MockDataStoreService = {}
 local MockDataStoreManager = require(script.MockDataStoreManager)
 local MockGlobalDataStore = require(script.MockGlobalDataStore)
 local MockOrderedDataStore = require(script.MockOrderedDataStore)
+local Utils = require(script.MockDataStoreUtils)
 local Constants = require(script.MockDataStoreConstants)
+local HttpService = game:GetService("HttpService") -- for json encode/decode
 
 local function makeGetWrapper(methodName, getObject, isGlobal) -- Helper function to reduce amount of redundant code
 	return function(_, name, scope)
@@ -147,12 +149,28 @@ function MockDataStoreService:GetRequestBudgetForRequestType(requestType) -- lua
 	return MockDataStoreManager.GetBudget(DataStoreRequestTypes[requestType])
 end
 
-function MockDataStoreService:ImportFromJSON(...) -- luacheck: ignore self
-	return MockDataStoreManager.ImportFromJSON(...)
+function MockDataStoreService:ImportFromJSON(json, verbose) -- luacheck: ignore self
+	local content
+	if type(json) == "string" then
+		local parsed, value = pcall(function() return HttpService:JSONDecode(json) end)
+		if not parsed then
+			error("bad argument #1 to 'ImportFromJSON' (string is not valid json)", 2)
+		end
+		content = value
+	elseif type(json) == "table" then
+		content = Utils.deepcopy(json)
+	else
+		error(("bad argument #1 to 'ImportFromJSON' (string or table expected, got %s)"):format(typeof(json)), 2)
+	end
+	if verbose ~= nil and type(verbose) ~= "boolean" then
+		error(("bad argument #2 to 'ImportFromJSON' (boolean expected, got %s)"):format(typeof(verbose)), 2)
+	end
+
+	return MockDataStoreManager.ImportFromJSON(content, verbose)
 end
 
-function MockDataStoreService:ExportToJSON(...) -- luacheck: ignore self
-	return MockDataStoreManager.ExportToJSON(...)
+function MockDataStoreService:ExportToJSON() -- luacheck: ignore self
+	return MockDataStoreManager.ExportToJSON()
 end
 
 return MockDataStoreService

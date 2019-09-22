@@ -1,0 +1,6 @@
+[package]
+name = "buildthomas/MockDataStoreService"
+author = "buildthomas"
+license = "Apache-2.0"
+content_root = "lib"
+version = "1.0.0"

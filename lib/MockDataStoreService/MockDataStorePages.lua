@@ -18,7 +18,7 @@ function MockDataStorePages:GetCurrentPage()
 	local minimumIndex = math.max(1, (self.__currentPage - 1) * self.__pageSize + 1)
 	local maximumIndex = math.min(self.__currentPage * self.__pageSize, #self.__results)
 	for i = minimumIndex, maximumIndex do
-		table.insert(retValue, self.__results[i]) -- No need to deepcopy, results only contains numbers
+		table.insert(retValue, {key = self.__results[i].key, value = self.__results[i].value})
 	end
 
 	return retValue

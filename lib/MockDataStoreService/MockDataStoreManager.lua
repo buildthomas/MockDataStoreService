@@ -91,6 +91,8 @@ local function checkBudget(budget)
 	return true
 end
 
+local isFrozen = false
+
 if RunService:IsServer() then
 	-- Only do budget/throttle updating on server (in case package required on client)
 
@@ -104,13 +106,15 @@ if RunService:IsServer() then
 			lastCheck = now
 			local n = #Players:GetPlayers()
 
-			for requestType, const in pairs(ConstantsMapping) do
-				updateBudget(requestType, const, dt, n)
+			if not isFrozen then
+				for requestType, const in pairs(ConstantsMapping) do
+					updateBudget(requestType, const, dt, n)
+				end
+				Budgets[Enum.DataStoreRequestType.UpdateAsync] = math.min(
+					Budgets[Enum.DataStoreRequestType.GetAsync],
+					Budgets[Enum.DataStoreRequestType.SetIncrementAsync]
+				)
 			end
-			Budgets[Enum.DataStoreRequestType.UpdateAsync] = math.min(
-				Budgets[Enum.DataStoreRequestType.GetAsync],
-				Budgets[Enum.DataStoreRequestType.SetIncrementAsync]
-			)
 
 			for _, budgetRequestQueue in pairs(budgetRequestQueues) do
 				for i = #budgetRequestQueue, 1, -1 do
@@ -196,6 +200,32 @@ function MockDataStoreManager.GetBudget(requestType)
 	else
 		return math.huge
 	end
+end
+
+function MockDataStoreManager.SetBudget(requestType, budget)
+	assert(type(budget) == "number")
+	budget = math.max(budget, 0)
+
+	if requestType == Enum.DataStoreRequestType.UpdateAsync then
+		Budgets[Enum.DataStoreRequestType.SetIncrementAsync] = budget
+		Budgets[Enum.DataStoreRequestType.GetAsync] = budget
+	end
+
+	if Budgets[requestType] then
+		Budgets[requestType] = budget
+	end
+end
+
+function MockDataStoreManager.ResetBudget()
+	initBudget()
+end
+
+function MockDataStoreManager.FreezeBudgetUpdates()
+	isFrozen = true
+end
+
+function MockDataStoreManager.ThawBudgetUpdates()
+	isFrozen = false
 end
 
 function MockDataStoreManager.YieldForWriteLockAndBudget(callback, key, writeLock, writeCache, budget)
@@ -312,19 +342,9 @@ local function importDataStoresFromTable(origin, destination, warnFunc, methodNa
 	end
 end
 
-function MockDataStoreManager.ImportFromJSON(json, verbose)
-	local content
-	if type(json) == "string" then
-		local parsed, value = pcall(function() return HttpService:JSONDecode(json) end)
-		if not parsed then
-			error("bad argument #1 to 'ImportFromJSON' (string is not valid json)", 2)
-		end
-		content = value
-	elseif type(json) == "table" then
-		content = Utils.deepcopy(json)
-	else
-		error(("bad argument #1 to 'ImportFromJSON' (string or table expected, got %s)"):format(typeof(json)), 2)
-	end
+function MockDataStoreManager.ImportFromJSON(content, verbose)
+	assert(type(content) == "table")
+	assert(verbose == nil or type(verbose) == "boolean")
 
 	local warnFunc = warn -- assume verbose as default
 	if verbose == false then -- intentional formatting
@@ -361,6 +381,43 @@ function MockDataStoreManager.ImportFromJSON(json, verbose)
 			"OrderedDataStore",
 			true
 		)
+	end
+end
+
+local function clearTable(t)
+	for i,_ in pairs(t) do
+		t[i] = nil
+	end
+end
+
+function MockDataStoreManager.ResetData()
+	for _, interface in pairs(Interfaces) do
+		for key, _ in pairs(interface.__data) do
+			interface.__data[key] = nil
+			interface.__event:Fire(key, nil)
+		end
+		interface.__getCache = {}
+		interface.__writeCache = {}
+		interface.__writeLock = {}
+		if interface.__sorted then
+			interface.__sorted = {};
+            interface.__ref = {};
+            interface.__changed = false;
+		end
+	end
+
+	clearTable(Data.GlobalDataStore)
+
+	for _, scopes in pairs(Data.DataStore) do
+		for _, data in pairs(scopes) do
+			clearTable(data)
+		end
+	end
+
+	for _, scopes in pairs(Data.OrderedDataStore) do
+		for _, data in pairs(scopes) do
+			clearTable(data)
+		end
 	end
 end
 
