@@ -9,7 +9,7 @@
 </div>
 
 <div align="center">
-    Emulation of Roblox's DataStoreService for seamless offline development & testing
+    <b>Emulation of Roblox's DataStoreService for seamless offline development & testing</b>
 </div>
 
 <div>&nbsp;</div>
