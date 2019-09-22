@@ -221,7 +221,7 @@ return function()
 
             Test.captureBudget()
 
-            for i = 1, 42 do
+            for _ = 1, 42 do
                 MockDataStorePages:AdvanceToNextPageAsync()
                 expect(Test.checkpointBudget{
                     [Enum.DataStoreRequestType.GetSortedAsync] = -1;
