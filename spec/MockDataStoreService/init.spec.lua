@@ -3,9 +3,9 @@ return function()
     local HttpService = game:GetService("HttpService")
 
     local function reset()
-        Test.Manager:ResetData()
-        Test.Manager:ResetBudget()
-        Test.Manager:ThawBudgetUpdates()
+        Test.Manager.ResetData()
+        Test.Manager.ResetBudget()
+        Test.Manager.ThawBudgetUpdates()
     end
 
     describe("MockDataStoreService", function()
@@ -238,13 +238,13 @@ return function()
 
             Test.Service:ImportFromJSON(testDataStores, false)
 
-            local globalData = Test.Manager:GetGlobalData()
+            local globalData = Test.Manager.GetGlobalData()
             expect(globalData).to.be.ok()
             expect(Test.subsetOf(globalData, testDataStores.GlobalDataStore)).to.equal(true)
 
             for name, scopes in pairs(testDataStores.DataStores) do
                 for scope, data in pairs(scopes) do
-                    local importedData = Test.Manager:GetData(name, scope)
+                    local importedData = Test.Manager.GetData(name, scope)
                     expect(importedData).to.be.ok()
                     expect(Test.subsetOf(data, importedData)).to.equal(true)
                 end
@@ -252,7 +252,7 @@ return function()
 
             for name, scopes in pairs(testDataStores.OrderedDataStores) do
                 for scope, data in pairs(scopes) do
-                    local importedData = Test.Manager:GetOrderedData(name, scope)
+                    local importedData = Test.Manager.GetOrderedData(name, scope)
                     expect(importedData).to.be.ok()
                     expect(Test.subsetOf(data, importedData)).to.equal(true)
                 end
@@ -295,13 +295,13 @@ return function()
 
             Test.Service:ImportFromJSON(testDataStores, false)
 
-            local globalData = Test.Manager:GetGlobalData()
+            local globalData = Test.Manager.GetGlobalData()
             expect(globalData).to.be.ok()
             expect(Test.subsetOf(globalData, oldValues.GlobalDataStore)).to.equal(true)
 
             for name, scopes in pairs(oldValues.DataStores) do
                 for scope, data in pairs(scopes) do
-                    local importedData = Test.Manager:GetData(name, scope)
+                    local importedData = Test.Manager.GetData(name, scope)
                     expect(importedData).to.be.ok()
                     expect(Test.subsetOf(data, importedData)).to.equal(true)
                 end
@@ -357,30 +357,30 @@ return function()
 
             Test.Service:ImportFromJSON(partiallyValid, false)
 
-            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope").TestKey1).to.be.ok()
-            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope").TestKey2).to.never.be.ok()
+            expect(Test.Manager.GetData("ImportTestName", "ImportTestScope").TestKey1).to.be.ok()
+            expect(Test.Manager.GetData("ImportTestName", "ImportTestScope").TestKey2).to.never.be.ok()
 
-            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope2").TestKey1).to.never.be.ok()
-            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope2").TestKey2).to.be.ok()
-            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope2").TestKey3).to.never.be.ok()
+            expect(Test.Manager.GetData("ImportTestName", "ImportTestScope2").TestKey1).to.never.be.ok()
+            expect(Test.Manager.GetData("ImportTestName", "ImportTestScope2").TestKey2).to.be.ok()
+            expect(Test.Manager.GetData("ImportTestName", "ImportTestScope2").TestKey3).to.never.be.ok()
 
-            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope3").TestKey1).to.be.ok()
-            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope3")[frame]).to.never.be.ok()
-            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope3")[true]).to.never.be.ok()
-            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope3")[123]).to.never.be.ok()
-            expect(Test.Manager:GetData("ImportTestName", "ImportTestScope3")[func]).to.never.be.ok()
+            expect(Test.Manager.GetData("ImportTestName", "ImportTestScope3").TestKey1).to.be.ok()
+            expect(Test.Manager.GetData("ImportTestName", "ImportTestScope3")[frame]).to.never.be.ok()
+            expect(Test.Manager.GetData("ImportTestName", "ImportTestScope3")[true]).to.never.be.ok()
+            expect(Test.Manager.GetData("ImportTestName", "ImportTestScope3")[123]).to.never.be.ok()
+            expect(Test.Manager.GetData("ImportTestName", "ImportTestScope3")[func]).to.never.be.ok()
 
-            expect(Test.Manager:GetData("ImportTestName2", "ImportTestScope").TestKey1).to.be.ok()
-            expect(Test.Manager:GetData("ImportTestName2", "ImportTestScope").TestKey2).to.be.ok()
-            expect(Test.Manager:GetData("ImportTestName2", "ImportTestScope").TestKey3).to.never.be.ok()
+            expect(Test.Manager.GetData("ImportTestName2", "ImportTestScope").TestKey1).to.be.ok()
+            expect(Test.Manager.GetData("ImportTestName2", "ImportTestScope").TestKey2).to.be.ok()
+            expect(Test.Manager.GetData("ImportTestName2", "ImportTestScope").TestKey3).to.never.be.ok()
 
-            expect(Test.Manager:GetData("ImportTestName2", "ImportTestScope2").TestKey1).to.never.be.ok()
-            expect(Test.Manager:GetData("ImportTestName2", "ImportTestScope2").TestKey2).to.never.be.ok()
+            expect(Test.Manager.GetData("ImportTestName2", "ImportTestScope2").TestKey1).to.never.be.ok()
+            expect(Test.Manager.GetData("ImportTestName2", "ImportTestScope2").TestKey2).to.never.be.ok()
 
-            expect(Test.Manager:GetGlobalData().TestKey1).to.be.ok()
-            expect(Test.Manager:GetGlobalData().TestKey1).to.be.ok()
-            expect(Test.Manager:GetGlobalData().TestKey1).to.be.ok()
-            expect(Test.Manager:GetGlobalData().TestKey1).to.never.be.ok()
+            expect(Test.Manager.GetGlobalData().TestKey1).to.be.ok()
+            expect(Test.Manager.GetGlobalData().TestKey1).to.be.ok()
+            expect(Test.Manager.GetGlobalData().TestKey1).to.be.ok()
+            expect(Test.Manager.GetGlobalData().TestKey1).to.never.be.ok()
 
         end)
 

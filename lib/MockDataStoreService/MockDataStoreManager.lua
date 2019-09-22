@@ -202,7 +202,7 @@ function MockDataStoreManager.GetBudget(requestType)
 	end
 end
 
-function MockDataStoreManager:SetBudget(requestType, budget)
+function MockDataStoreManager.SetBudget(requestType, budget)
 	assert(type(budget) == "number")
 	budget = math.max(budget, 0)
 
@@ -216,19 +216,19 @@ function MockDataStoreManager:SetBudget(requestType, budget)
 	end
 end
 
-function MockDataStoreManager:ResetBudget()
+function MockDataStoreManager.ResetBudget()
 	initBudget()
 end
 
-function MockDataStoreManager:FreezeBudgetUpdates()
+function MockDataStoreManager.FreezeBudgetUpdates()
 	isFrozen = true
 end
 
-function MockDataStoreManager:ThawBudgetUpdates()
+function MockDataStoreManager.ThawBudgetUpdates()
 	isFrozen = false
 end
 
-function MockDataStoreManager:YieldForWriteLockAndBudget(callback, key, writeLock, writeCache, budget)
+function MockDataStoreManager.YieldForWriteLockAndBudget(callback, key, writeLock, writeCache, budget)
 	assert(type(callback) == "function")
 	assert(type(key) == "string")
 	assert(type(writeLock) == "table")
@@ -342,7 +342,7 @@ local function importDataStoresFromTable(origin, destination, warnFunc, methodNa
 	end
 end
 
-function MockDataStoreManager:ImportFromJSON(content, verbose)
+function MockDataStoreManager.ImportFromJSON(content, verbose)
 	assert(type(content) == "table")
 	assert(verbose == nil or type(verbose) == "boolean")
 
@@ -390,11 +390,11 @@ local function clearTable(t)
 	end
 end
 
-function MockDataStoreManager:ResetData()
+function MockDataStoreManager.ResetData()
 	for _, interface in pairs(Interfaces) do
-		for key, _ in pairs(self.__data) do
-			self.__data[key] = nil
-			self.__event:Fire(key, nil)
+		for key, _ in pairs(interface.__data) do
+			interface.__data[key] = nil
+			interface.__event:Fire(key, nil)
 		end
 		interface.__getCache = {}
 		interface.__writeCache = {}

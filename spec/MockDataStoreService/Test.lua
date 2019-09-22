@@ -16,9 +16,9 @@ Test.Constants.YIELD_TIME_UPDATE_MAX = 0
 local capturedBudgets = {}
 
 function Test.reset()
-    Test.Manager:ResetData()
-    Test.Manager:ResetBudget()
-    Test.Manager:ThawBudgetUpdates()
+    Test.Manager.ResetData()
+    Test.Manager.ResetBudget()
+    Test.Manager.ThawBudgetUpdates()
     capturedBudgets = {}
 end
 
@@ -43,16 +43,16 @@ function Test.subsetOf(t1, t2)
 end
 
 function Test.setStaticBudgets(var)
-    Test.Manager:FreezeBudgetUpdates()
+    Test.Manager.FreezeBudgetUpdates()
     if type(var) == "number" then
         local budget = var
         for _,v in pairs(Enum.DataStoreRequestType:GetEnumItems()) do
-            Test.Manager:SetBudget(v, budget)
+            Test.Manager.SetBudget(v, budget)
         end
     elseif type(var) == "table" then
         local budgets = var
         for requestType, budget in pairs(budgets) do
-            Test.Manager:SetBudget(requestType, budget)
+            Test.Manager.SetBudget(requestType, budget)
         end
     end
 end
@@ -60,7 +60,7 @@ end
 function Test.captureBudget()
     for _,v in pairs(Enum.DataStoreRequestType:GetEnumItems()) do
         if v ~= Enum.DataStoreRequestType.UpdateAsync then
-            capturedBudgets[v] = Test.Manager:GetBudget(v)
+            capturedBudgets[v] = Test.Manager.GetBudget(v)
         end
     end
 end
@@ -68,7 +68,7 @@ end
 function Test.checkpointBudget(checkpoint)
     local match = true
     for requestType, difference in pairs(checkpoint) do
-        if Test.Manager:GetBudget(requestType) - capturedBudgets[requestType] ~= difference then
+        if Test.Manager.GetBudget(requestType) - capturedBudgets[requestType] ~= difference then
             match = nil
             break
         end
@@ -76,7 +76,7 @@ function Test.checkpointBudget(checkpoint)
     end
     if match then
         for requestType, budget in pairs(capturedBudgets) do
-            if Test.Manager:GetBudget(requestType) ~= budget then
+            if Test.Manager.GetBudget(requestType) ~= budget then
                 match = nil
             end
         end

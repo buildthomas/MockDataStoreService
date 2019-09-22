@@ -149,7 +149,7 @@ function MockDataStoreService:GetRequestBudgetForRequestType(requestType) -- lua
 	return MockDataStoreManager.GetBudget(DataStoreRequestTypes[requestType])
 end
 
-function MockDataStoreService:ImportFromJSON(json, verbose)
+function MockDataStoreService:ImportFromJSON(json, verbose) -- luacheck: ignore self
 	local content
 	if type(json) == "string" then
 		local parsed, value = pcall(function() return HttpService:JSONDecode(json) end)
@@ -166,11 +166,11 @@ function MockDataStoreService:ImportFromJSON(json, verbose)
 		error(("bad argument #2 to 'ImportFromJSON' (boolean expected, got %s)"):format(typeof(verbose)), 2)
 	end
 
-	return MockDataStoreManager:ImportFromJSON(content, verbose)
+	return MockDataStoreManager.ImportFromJSON(content, verbose)
 end
 
-function MockDataStoreService:ExportToJSON()
-	return MockDataStoreManager:ExportToJSON()
+function MockDataStoreService:ExportToJSON() -- luacheck: ignore self
+	return MockDataStoreManager.ExportToJSON()
 end
 
 return MockDataStoreService

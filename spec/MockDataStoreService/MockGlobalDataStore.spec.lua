@@ -780,7 +780,7 @@ return function()
             MockGlobalDataStore:UpdateAsync("TestKey", function() return 1 end)
             MockGlobalDataStore:GetAsync("TestKey")
 
-            expect(Test.Manager:GetBudget(Enum.DataStoreRequestType.GetAsync)).to.equal(1)
+            expect(Test.Manager.GetBudget(Enum.DataStoreRequestType.GetAsync)).to.equal(1)
 
         end)
 
