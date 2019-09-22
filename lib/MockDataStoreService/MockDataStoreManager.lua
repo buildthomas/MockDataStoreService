@@ -203,7 +203,7 @@ function MockDataStoreManager.GetBudget(requestType)
 end
 
 function MockDataStoreManager:SetBudget(requestType, budget)
-	assert(typeof(budget) == "number")
+	assert(type(budget) == "number")
 	budget = math.max(budget, 0)
 
 	if requestType == Enum.DataStoreRequestType.UpdateAsync then
@@ -229,10 +229,10 @@ function MockDataStoreManager:ThawBudgetUpdates()
 end
 
 function MockDataStoreManager:YieldForWriteLockAndBudget(callback, key, writeLock, writeCache, budget)
-	assert(typeof(callback) == "function")
-	assert(typeof(key) == "string")
-	assert(typeof(writeLock) == "table")
-	assert(typeof(writeCache) == "table")
+	assert(type(callback) == "function")
+	assert(type(key) == "string")
+	assert(type(writeLock) == "table")
+	assert(type(writeCache) == "table")
 	assert(#budget > 0)
 
 	local mainRequestType = budget[1]
@@ -343,8 +343,8 @@ local function importDataStoresFromTable(origin, destination, warnFunc, methodNa
 end
 
 function MockDataStoreManager:ImportFromJSON(content, verbose)
-	assert(typeof(content) == "table")
-	assert(verbose == nil or typeof(verbose) == "boolean")
+	assert(type(content) == "table")
+	assert(verbose == nil or type(verbose) == "boolean")
 
 	local warnFunc = warn -- assume verbose as default
 	if verbose == false then -- intentional formatting

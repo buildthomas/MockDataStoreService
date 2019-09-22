@@ -44,12 +44,12 @@ end
 
 function Test.setStaticBudgets(var)
     Test.Manager:FreezeBudgetUpdates()
-    if typeof(var) == "number" then
+    if type(var) == "number" then
         local budget = var
         for _,v in pairs(Enum.DataStoreRequestType:GetEnumItems()) do
             Test.Manager:SetBudget(v, budget)
         end
-    elseif typeof(var) == "table" then
+    elseif type(var) == "table" then
         local budgets = var
         for requestType, budget in pairs(budgets) do
             Test.Manager:SetBudget(requestType, budget)

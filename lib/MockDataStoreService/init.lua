@@ -151,18 +151,18 @@ end
 
 function MockDataStoreService:ImportFromJSON(json, verbose)
 	local content
-	if typeof(json) == "string" then
+	if type(json) == "string" then
 		local parsed, value = pcall(function() return HttpService:JSONDecode(json) end)
 		if not parsed then
 			error("bad argument #1 to 'ImportFromJSON' (string is not valid json)", 2)
 		end
 		content = value
-	elseif typeof(json) == "table" then
+	elseif type(json) == "table" then
 		content = Utils.deepcopy(json)
 	else
 		error(("bad argument #1 to 'ImportFromJSON' (string or table expected, got %s)"):format(typeof(json)), 2)
 	end
-	if verbose ~= nil and typeof(verbose) ~= "boolean" then
+	if verbose ~= nil and type(verbose) ~= "boolean" then
 		error(("bad argument #2 to 'ImportFromJSON' (boolean expected, got %s)"):format(typeof(verbose)), 2)
 	end
 
