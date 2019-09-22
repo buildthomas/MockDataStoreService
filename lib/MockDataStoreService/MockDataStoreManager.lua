@@ -98,9 +98,9 @@ if RunService:IsServer() then
 
 	initBudget()
 
-	delay(0, function() -- Thread that increases budgets and de-throttles requests periodically
+	coroutine.wrap(function() -- Thread that increases budgets and de-throttles requests periodically
 		local lastCheck = tick()
-		while wait(Constants.BUDGET_UPDATE_INTERVAL) do
+		while Utils.accurateWait(Constants.BUDGET_UPDATE_INTERVAL) do
 			local now = tick()
 			local dt = (now - lastCheck) / 60
 			lastCheck = now
@@ -134,7 +134,7 @@ if RunService:IsServer() then
 				end
 			end
 		end
-	end)
+	end)()
 
 	game:BindToClose(function()
 		for requestType, const in pairs(ConstantsMapping) do

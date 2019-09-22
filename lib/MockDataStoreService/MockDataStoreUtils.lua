@@ -10,6 +10,7 @@ local MockDataStoreUtils = {}
 
 local Constants = require(script.Parent.MockDataStoreConstants)
 local HttpService = game:GetService("HttpService") -- for json encode/decode
+local RunService = game:GetService("RunService")
 
 local rand = Random.new()
 
@@ -253,9 +254,20 @@ local function preprocessKey(key)
 	return key
 end
 
+local function accurateWait(dt)
+	dt = math.max(0, dt)
+	local left = dt
+
+	while left > 0 do
+		left = left - RunService.Heartbeat:Wait()
+	end
+
+	return dt - left
+end
+
 local function simulateYield()
 	if Constants.YIELD_TIME_MAX > 0 then
-		wait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
+		accurateWait(rand:NextNumber(Constants.YIELD_TIME_MIN, Constants.YIELD_TIME_MAX))
 	end
 end
 
@@ -274,6 +286,7 @@ MockDataStoreUtils.getStringPath = getStringPath
 MockDataStoreUtils.importPairsFromTable = importPairsFromTable
 MockDataStoreUtils.prepareDataStoresForExport = prepareDataStoresForExport
 MockDataStoreUtils.preprocessKey = preprocessKey
+MockDataStoreUtils.accurateWait = accurateWait
 MockDataStoreUtils.simulateYield = simulateYield
 MockDataStoreUtils.simulateErrorCheck = simulateErrorCheck
 

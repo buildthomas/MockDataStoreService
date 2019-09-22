@@ -46,7 +46,7 @@ function MockGlobalDataStore:OnUpdate(key, callback)
 	return self.__event.Event:Connect(function(k, v)
 		if k == key then
 			if Constants.YIELD_TIME_UPDATE_MAX > 0 then
-				wait(rand:NextNumber(Constants.YIELD_TIME_UPDATE_MIN, Constants.YIELD_TIME_UPDATE_MAX))
+				Utils.accurateWait(rand:NextNumber(Constants.YIELD_TIME_UPDATE_MIN, Constants.YIELD_TIME_UPDATE_MAX))
 			end
 			callback(v) -- v was implicitly deep-copied
 		end
