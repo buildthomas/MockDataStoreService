@@ -1,0 +1,44 @@
+{
+    "name": "MockDataStoreService Test Place",
+    "tree": {
+      "$className": "DataModel",
+
+      "ServerStorage": {
+        "$className": "ServerStorage",
+
+        "DataStoreService": {
+          "$path": "lib"
+        },
+
+        "TestDataStoreService": {
+            "$path": "spec"
+        },
+
+        "TestEZ": {
+          "$path": "vendor/testez/lib"
+        }
+      },
+
+      "ServerScriptService": {
+        "$className": "ServerScriptService",
+
+        "MockDataStoreServiceTests": {
+          "$path": "bin/run-tests.server.lua"
+        }
+      },
+
+      "HttpService": {
+        "$className": "HttpService",
+        "$properties": {
+          "HttpEnabled": true
+        }
+      },
+
+      "Players": {
+        "$className": "Players",
+        "$properties": {
+          "CharacterAutoLoads": false
+        }
+      }
+    }
+  }
