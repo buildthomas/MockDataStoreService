@@ -64,7 +64,6 @@ function MockGlobalDataStore:GetAsync(key)
 	end
 
 	if self.__getCache[key] and tick() - self.__getCache[key] < Constants.GET_COOLDOWN then
-		self.__getCache[key] = tick()
 		return Utils.deepcopy(self.__data[key])
 	end
 
