@@ -14,7 +14,7 @@ return {
     MAX_LENGTH_KEY = 49;            -- Max number of chars in key string
     MAX_LENGTH_NAME = 50;           -- Max number of chars in name string
     MAX_LENGTH_SCOPE = 50;          -- Max number of chars in scope string
-    MAX_LENGTH_DATA = 260e3;        -- Max number of chars in (encoded) data strings
+    MAX_LENGTH_DATA = 4194301;      -- Max number of chars in (encoded) data strings
 
     MAX_PAGE_SIZE = 100;            -- Max page size for GetSortedAsync
 
