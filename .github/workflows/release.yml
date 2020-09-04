@@ -40,4 +40,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: MockDataStoreService.rbxmx
+        asset_name: MockDataStoreService.rbxmx
         asset_content_type: application/xml
