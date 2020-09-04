@@ -1,12 +1,6 @@
 {
   "name": "DataStoreService",
   "tree": {
-    "$className": "DataModel",
-    "ServerStorage": {
-      "$className": "ServerStorage",
-      "DataStoreService": {
-        "$path": "lib"
-      }
-    }
+    "$path": "lib"
   }
 }
