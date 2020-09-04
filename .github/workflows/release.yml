@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 jobs:
   release:
-    name: Create framework release
+    name: Create MockDataStoreService release
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
