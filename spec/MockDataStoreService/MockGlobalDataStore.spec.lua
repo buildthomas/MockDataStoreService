@@ -61,28 +61,28 @@ return function()
                 TestKey1 = 123;
             }
 
-			values.__metadata = {
-				TestKey1 = {
-					userIds = {1234},
-					version = 1,
-					createdTime = 123,
-					updatedTime = 12345,
-					userMetadata = {
-						TestMetadataKey1 = "TestMetadataValue1"
-					}
-				}
-			}
+            values.__metadata = {
+                TestKey1 = {
+                    userIds = {1234},
+                    version = 1,
+                    createdTime = 123,
+                    updatedTime = 12345,
+                    userMetadata = {
+                        TestMetadataKey1 = "TestMetadataValue1"
+                    }
+                }
+            }
 
             MockGlobalDataStore:ImportFromJSON(values)
 
-			local retValue, retMetadataValue = MockGlobalDataStore:GetAsync("TestKey1")
-			expect(retValue).to.equal(values.TestKey1)
-			expect(retMetadataValue).to.be.ok()
-			expect(retMetadataValue:GetUserIds()[1]).to.equal(1234)
-			expect(retMetadataValue:GetMetadata().TestMetadataKey1).to.equal("TestMetadataValue1")
-			expect(retMetadataValue.Version).to.equal(1)
-			expect(retMetadataValue.CreatedTime).to.equal(123)
-			expect(retMetadataValue.UpdatedTime).to.equal(12345)
+            local retValue, retMetadataValue = MockGlobalDataStore:GetAsync("TestKey1")
+            expect(retValue).to.equal(values.TestKey1)
+            expect(retMetadataValue).to.be.ok()
+            expect(retMetadataValue:GetUserIds()[1]).to.equal(1234)
+            expect(retMetadataValue:GetMetadata().TestMetadataKey1).to.equal("TestMetadataValue1")
+            expect(retMetadataValue.Version).to.equal(1)
+            expect(retMetadataValue.CreatedTime).to.equal(123)
+            expect(retMetadataValue.UpdatedTime).to.equal(12345)
 
         end)
 
@@ -492,14 +492,14 @@ return function()
             Test.setStaticBudgets(100)
             local MockGlobalDataStore = Test.Service:GetDataStore("Test")
 
-			local setOptions = Instance.new("DataStoreSetOptions")
-			setOptions:SetMetadata({TestMetadataKey1 = "TestMetadataValue1"})
+            local setOptions = Instance.new("DataStoreSetOptions")
+            setOptions:SetMetadata({TestMetadataKey1 = "TestMetadataValue1"})
 
             MockGlobalDataStore:SetAsync("TestKey1", 123, {1234}, setOptions)
 
             local exported = HttpService:JSONDecode(MockGlobalDataStore:ExportToJSON())
             expect(exported.TestKey1).to.equal(123)
-			expect(exported.__metadata).to.be.a("table")
+            expect(exported.__metadata).to.be.a("table")
             expect(exported.__metadata.TestKey1.userIds).to.be.a("table")
             expect(exported.__metadata.TestKey1.userIds[1]).to.equal(1234)
             expect(exported.__metadata.TestKey1.userMetadata).to.be.a("table")
