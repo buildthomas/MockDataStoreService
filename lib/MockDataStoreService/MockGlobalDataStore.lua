@@ -84,11 +84,27 @@ function MockGlobalDataStore:GetAsync(key)
 
 	local retValue = Utils.deepcopy(self.__data[key])
 
+	local retMetadataValue = {}
+	local metadata = self.__metadata[key]
+	if metadata then
+		retMetadataValue = {
+			GetUserIds = function()
+				return Utils.deepcopy(metadata.userIds)
+			end,
+			GetMetadata = function()
+				return Utils.deepcopy(metadata.userMetadata)
+			end,
+			Version = metadata.version,
+			CreatedTime = metadata.createdTime,
+			UpdatedTime = metadata.updatedTime,
+		}
+	end
+
 	Utils.simulateYield()
 
 	Utils.logMethod(self, "GetAsync", key)
 
-	return retValue
+	return retValue, retMetadataValue
 end
 
 function MockGlobalDataStore:IncrementAsync(key, delta)
@@ -226,7 +242,7 @@ function MockGlobalDataStore:RemoveAsync(key)
 	return value
 end
 
-function MockGlobalDataStore:SetAsync(key, value)
+function MockGlobalDataStore:SetAsync(key, value, userIds, options)
 	key = Utils.preprocessKey(key)
 	if type(key) ~= "string" then
 		error(("bad argument #1 to 'SetAsync' (string expected, got %s)"):format(typeof(key)), 2)
@@ -258,6 +274,19 @@ function MockGlobalDataStore:SetAsync(key, value)
 				:format(Constants.MAX_LENGTH_DATA), 2)
 		elseif not utf8.len(value) then
 			error("bad argument #2 to 'SetAsync' (string value is not valid UTF-8)", 2)
+		end
+	end
+
+	-- TODO: Additional validation of userIds and options args
+	if userIds ~= nil then
+		if type(userIds) ~= "table" then
+			error(("bad argument #3 to 'SetAsync' (table expected, got %s)"):format(typeof(key)), 2)
+		end
+	end
+
+	if options ~= nil then
+		if typeof(options) ~= "Instance" or not options:IsA("DataStoreSetOptions") then
+			error(("bad argument #4 to 'SetAsync' (DataStoreSetOptions expected, got %s)"):format(typeof(key)), 2)
 		end
 	end
 
@@ -293,6 +322,24 @@ function MockGlobalDataStore:SetAsync(key, value)
 	end
 
 	self.__writeLock[key] = true
+
+	local userMetadata
+	if options ~= nil then
+		userMetadata = options:GetMetadata()
+	else
+		userMetadata = {}
+	end
+
+	-- TODO: Update existing metadata
+	local metadata = {
+		userIds = userIds or {},
+		version = 1,
+		createdTime = tick(),
+		updatedTime = tick(),
+		userMetadata = userMetadata
+	}
+
+	self.__metadata[key] = metadata
 
 	if type(value) == "table" or value ~= self.__data[key] then
 		self.__data[key] = Utils.deepcopy(value)
@@ -411,7 +458,9 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 end
 
 function MockGlobalDataStore:ExportToJSON()
-	return HttpService:JSONEncode(self.__data)
+	local new = Utils.deepcopy(self.__data)
+	new.__metadata = self.__metadata
+	return HttpService:JSONEncode(new)
 end
 
 function MockGlobalDataStore:ImportFromJSON(json, verbose)

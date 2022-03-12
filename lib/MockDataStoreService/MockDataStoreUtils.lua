@@ -154,6 +154,11 @@ end
 
 -- Import into a single datastore:
 local function importPairsFromTable(origin, destination, interface, warnFunc, methodName, prefix, isOrdered)
+	local metadata = origin.__metadata
+	if metadata ~= nil then
+		origin.__metadata = nil
+	end
+
 	for key, value in pairs(origin) do
 		if type(key) ~= "string" then
 			warnFunc(("%s: ignored %s > '%s' (key is not a string, but a %s)")
@@ -192,6 +197,10 @@ local function importPairsFromTable(origin, destination, interface, warnFunc, me
 				value = math.floor(value + .5)
 			end
 			if isValid then
+				if interface.__metadata then
+					interface.__metadata[key] = metadata[key]
+				end
+
 				local old = destination[key]
 				destination[key] = value
 				if interface and old ~= value then -- hacky block to fire OnUpdate signals
