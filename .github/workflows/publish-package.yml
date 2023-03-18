@@ -1,0 +1,25 @@
+name : Publish system packages to registry
+on:
+  release:
+    types: [published]
+
+jobs:
+  package-publish:
+    name: Publish packages to wally registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+
+      - name: Setup foreman
+        uses: rojo-rbx/setup-foreman@62bc697705339a6049f74c9d0ff6d39cffc993e5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish wally packages
+        env:
+          WALLY_AUTH: ${{ secrets.WALLY_AUTH }}
+        run: |
+          mkdir -p ~/.wally
+          echo "$WALLY_AUTH" > ~/.wally/auth.toml
+          wally publish
