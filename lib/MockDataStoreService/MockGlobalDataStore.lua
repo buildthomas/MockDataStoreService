@@ -357,7 +357,21 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 		error("UpdateAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
-	local value = transformFunction(Utils.deepcopy(self.__data[key]))
+	local thread = coroutine.create(function()
+		return transformFunction(Utils.deepcopy(self.__data[key]))
+	end)
+
+	local ok, value = coroutine.resume(thread)
+
+	if coroutine.status(thread) == "suspended" then
+		task.spawn(error, "Transfom function error Callbacks cannot yield")
+		return
+	end
+
+	if not ok then
+		task.spawn(error, `Transform function error {value}`)
+		return
+	end
 
 	if value == nil then -- cancel update after remote call
 		Utils.simulateYield()

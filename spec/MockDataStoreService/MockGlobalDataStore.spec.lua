@@ -693,6 +693,43 @@ return function()
 
         end)
 
+        it("should not throw error to caller when transform function errors", function()
+            Test.reset()
+            Test.setStaticBudgets(100)
+            local MockGlobalDataStore = Test.Service:GetDataStore("Test")
+
+            local ok, value = pcall(function()
+                return MockGlobalDataStore:UpdateAsync("TestKey1", function()
+                    error("intentional error")
+                    return "new value"
+                end)
+            end)
+
+            expect(ok).to.equal(true)
+            expect(value).never.to.be.ok()
+
+        end)
+
+        it("should not succeed when transform function yields", function()
+            Test.reset()
+            Test.setStaticBudgets(100)
+            local MockGlobalDataStore = Test.Service:GetDataStore("Test")
+
+            MockGlobalDataStore:ImportFromJSON({TestKey1 = "value"})
+
+            MockGlobalDataStore:UpdateAsync("TestKey1", function()
+                task.wait()
+                return "new value"
+            end)
+
+            task.wait()
+
+            local exported = HttpService:JSONDecode(MockGlobalDataStore:ExportToJSON())
+
+            expect(exported.TestKey1).to.equal("value")
+
+        end)
+
         it("should consume budgets correctly", function()
             Test.reset()
             Test.setStaticBudgets(100)
